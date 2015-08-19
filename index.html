@@ -1,0 +1,101 @@
+<!doctype html>
+<html class="no-js" lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Apache Log Generator</title>
+    <link rel="stylesheet" href="css/foundation.css" />
+    <link rel="stylesheet" href="css/style.css" />
+    <link rel="stylesheet" href="js/vendor/jqueryUI/jquery-ui.min.css" />
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.min.css">
+    <script src="js/vendor/modernizr.js"></script>
+  </head>
+  <body>
+    <div class="wrapper">
+      <section id="side_bar">
+        <div class="logo">
+          <img src="logo-04.png" class='icon' alt="">
+          <img src="logo-05.png" class='text' alt="">
+        </div>
+        <div class="app_info">
+          <p class="v">v 1.0</p>
+          <p>jQuery app for creating apache log syntax</p>
+          
+        </div>
+        <button class="button"><span class='show_hints'><i class='fa fa-angle-double-left'>&nbsp;</i>how to use</span><span class='show_sidebar'><i class='fa fa-angle-double-right'></i></span></button>
+        <div class="github"><a href='https://github.com/karpspace/Apache-Log-Generator' target=_blank><i class="fa fa-github"></i></a></div>
+        <footer>
+          <p><span>Mady by:</span>
+            <br>Michael Karpinski - BackEnd<br>
+            <a href='mailto:thetauku@gmail.com'>thetauku@gmail.com</a><br>
+            Martyna Machowiak - FrontEnd<br>
+            <a href='mailto:martyna.machowiak@gmail.com'>martyna.machowiak@gmail.com</a>
+          </p>
+          <p>2015</p>
+        </footer>
+      </section>
+      <section class="section section_from">
+        <aside class="info">
+          <h4>Step ONE</h4>
+          <p>Find your httpd.conf.<br>Usually it can be found in <b>/etc/httpd/conf/</b> directory.<br> Find a line that starts with "LogFormat", around line 500.  <br>
+          </p>
+        </aside>
+        <main class="content">
+          <div class="from-mainblocks">
+            <ul id= "chooseFrom" class="chooseFrom connectedLists">
+            </ul>
+          </div>
+          <div class="from-signs">
+            <ul id= "chooseFromSigns" class="chooseFromSigns connectedLists">
+            </ul>            
+          </div>
+        </main>
+      </section>
+      <section class="section section_to">
+        <aside class="info">
+          <h4>Step TWO</h4>
+          <p>
+          Choose elements that you want in your log, then drag and drop the to the space below.</p>
+        </aside>
+        <main class="content">
+          <ul id= "chooseTo" class="chooseTo connectedLists" ></ul>
+        </main>
+      </section>
+      <section class="section section_syntax">
+        <aside class="info">
+          <h4>Step THREE</h4>
+          <p>Copy the syntax. You can also see how you log will look like.</p>
+        </aside>
+        <main class="content">
+          <div class="syntax">
+            <h3>Syntax:</h3>
+            <p></p>
+            <br>
+            
+          </div>
+          <div class="example">
+            <h3>Example:</h3>
+            <p></p>
+          </div>
+        </main>
+      </section>
+    </div>
+  
+
+    <script src="js/vendor/jquery.js"></script>
+    <script src="js/vendor/jqueryUI/jquery-ui.min.js"></script>
+    <script src="js/foundation.min.js"></script>
+    <script src="js/app.js"></script>
+    <script>
+      $(document).foundation();
+      $(document).ready(function(){
+        $('.show_sidebar').hide();
+        $('.logo, .button').click(function(){
+          $('#side_bar').toggleClass('full_side_bar');
+          $('.show_sidebar').fadeToggle(300);
+          $('.show_hints').fadeToggle(300);
+        });
+      });
+    </script>
+  </body>
+</html>

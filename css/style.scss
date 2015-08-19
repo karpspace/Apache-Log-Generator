@@ -1,0 +1,263 @@
+//VAR
+	$white: #fafafa;
+	$graphite: #231F20;
+	$grey: #aaa;
+	$mediumgrey: #D1D3D4;
+	$lightgrey: #E6E7E8;
+	$teal: #00A79D;
+
+	$width-side_bar: 300px;
+	$width-content: calc(100% - 300px);
+	$size-tile: 70px;
+	$size-tile_small: 50px;
+
+	$padding_ul: 30px;	
+
+	@import url(http://fonts.googleapis.com/css?family=Roboto+Condensed:400,400italic,700,700italic,300italic,300);
+	$roboto-con: 'Roboto Condensed';
+
+	@mixin transition($transition){
+		-webkit-transition: $transition; 
+		   -moz-transition: $transition; 
+			 -o-transition: $transition; 
+				transition: $transition;
+	}
+body {
+	background: $teal;
+	font-family: $roboto-con;
+}
+
+section#side_bar {
+	background: $graphite;
+	width: $width-side_bar;
+	height: 100vh;
+	position: fixed;
+	padding: 40px;
+	left: 0px;
+	z-index: 10;
+	@include transition(all 0.5s ease);
+	.logo {
+		width: 100%;
+		overflow: hidden;
+		margin-bottom: 40px;
+		.icon, .text {
+			display: inline-block;
+			height: 60px; 
+			float: right;
+		}
+		.icon {margin-left: 20px;}
+		.text {
+			opacity: 1;
+			@include transition(all 0.5s ease);
+		}
+	}
+	.app_info {opacity: 1; @include transition(all 0.5s ease);}
+	p {
+		color: $mediumgrey;
+		font-weight: 300;
+		text-align: right;
+		font-size: 85%;
+	}
+	.button {
+		display: block;
+		width: auto;
+		min-width: 50px;
+		background: $teal;
+		color: $white;
+		text-transform: uppercase;
+		float: right;
+		box-shadow: inset 0 60px 0 darken($teal,0%);
+		font-size: 14px;
+		padding: 16px 16px; 
+		outline: none;
+		@include transition(all 0.3s ease);
+		&:hover {
+			box-shadow: inset 0 60px 0 darken($teal,10%);
+		}
+	}
+	.github {
+		float: right;
+		display: inline-block;
+		width: 100%; 
+		a {
+			display: block;
+			color: $teal;
+			font-size: 50px;
+			width: 50px;
+			height: 50px;
+			float: right;
+			text-align: center;
+			@include transition(all 0.3s ease);
+			&:hover {
+				color: lighten($teal,20%);
+			}
+		}
+	}
+	footer {
+		position: absolute;
+		bottom: 0;
+		width: calc(100% - 80px);
+		left: 40px;
+		padding-top: 30px;
+		border-top: 8px dotted lighten($graphite,5%);
+		@include transition(all 0.5s ease);
+		span {font-weight: 600;}
+		a {
+			color: $teal;
+		}
+	}
+}
+.full_side_bar {
+	left: -180px !important;
+	.logo .text, .app_info, footer {opacity: 0 !important;}
+}
+.section {
+	width: 100%;
+	min-height: 33.33vh;
+	overflow: hidden;
+}
+section.section_from {
+	background: $lightgrey;
+}
+section.section_to {
+	background: $mediumgrey;
+	
+}
+section.section_syntax {
+	background: $teal;
+	color: $white;
+	font-family: $roboto-con;
+	position: relative;
+	h3 {
+		font-size: 24px;
+		font-weight: 800;
+		font-family: $roboto-con;
+		text-transform: uppercase;
+		
+	}
+	.example {
+		position: absolute;
+		bottom: 0;
+		width: calc(100vw - 300px - 80px);
+		margin-left: $padding_ul;
+		border-top: 6px dotted lighten($teal,5%);
+		padding: 10px;
+		h3 {
+			color: lighten($teal,5%);
+		}
+		p {color: lighten($teal,35%);}
+	}
+	.syntax {
+		h3 {color: lighten($teal,15%);}
+		p {margin-bottom: 0;}
+	}
+}
+.info, .content {
+	float: left;
+	height: inherit;	
+	min-height: inherit;
+	//padding: 40px;
+}
+.info {
+	width: $width-side_bar - 120px;
+	min-height: 100px;
+	margin-left: 120px;
+	padding: $padding_ul 0 $padding_ul $padding_ul;
+	h4 {
+		font-size: 15px;
+		line-height: 1.1;
+		text-transform: uppercase;
+		margin-top: 10px;
+		font-weight: 600;
+	}
+	p {
+		font-size: 13px;
+		text-align: justify;
+		line-height: 1.2;
+	}
+}
+.section_from .info {
+	h4 {color: $teal;}
+	p {color: $grey;}
+}
+.section_to .info {
+	h4 {color: $teal;}
+	p {color: darken($grey,5%);}
+}
+.section_syntax .info {
+	h4 {color: lighten($teal,40%);}
+	p {color: $white; opacity: 0.8;}
+}
+.content {
+	width: $width-content;
+	overflow: hidden;
+	.from-signs, .from-mainblocks {float: left;}
+	.from-signs {
+		width: 25%;
+		height: inherit;
+		min-height: 33.33vh;
+	}
+	.from-mainblocks {
+		width: 75%;
+	}
+}
+.dt {display: table; width: 100%;}
+.dtc {display: table-cell;}
+.element {
+	.dt {height: 50px;}
+	.dtc {vertical-align: middle;}
+}
+.sign {
+	.dt {height: 30px;}
+	.dtc {vertical-align: middle;}
+}
+
+
+.part-basic {
+	display: inline-block;
+	background-color: $white;
+	box-shadow: 4px 4px rgba(#000,0.05);
+	float: left;
+	margin: 10px;
+	padding: 10px;
+	text-align: center;
+	line-height: 1.1;
+	text-transform: uppercase;
+	font-family: $roboto-con;
+	z-index: 10000;
+	cursor: move;
+}
+.element {
+	@extend .part-basic;
+	height: $size-tile;
+	width: $size-tile;
+	font-size: 12px;
+	font-weight: 600;
+	color: $grey;
+}
+.sign {
+	@extend .part-basic;
+	height: $size-tile_small;
+	width: $size-tile_small;
+	font-size: 20px;
+	font-weight: 800;
+	color: $teal;
+}
+.chooseTo .sign {
+	margin: 20px 10px;
+}
+
+.chooseFrom, .chooseTo {
+	z-index: -10000;
+	margin: 0 !important;
+}
+
+.chooseFrom, .chooseFromSigns, .chooseTo, .syntax {
+	width: 100%;
+	min-height: 100px;
+	overflow: hidden;
+}
+.chooseTo {padding: $padding_ul;}
+.syntax {padding: $padding_ul 40px;}
+.chooseFrom {padding: $padding_ul $padding_ul*0.5 $padding_ul $padding_ul;}
+.chooseFromSigns {padding: $padding_ul $padding_ul $padding_ul $padding_ul*0.5;}

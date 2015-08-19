@@ -1,0 +1,257 @@
+@import url(http://fonts.googleapis.com/css?family=Roboto+Condensed:400,400italic,700,700italic,300italic,300);
+body {
+  background: #00A79D;
+  font-family: "Roboto Condensed"; }
+
+section#side_bar {
+  background: #231F20;
+  width: 300px;
+  height: 100vh;
+  position: fixed;
+  padding: 40px;
+  left: 0px;
+  z-index: 10;
+  -webkit-transition: all 0.5s ease;
+  -moz-transition: all 0.5s ease;
+  -o-transition: all 0.5s ease;
+  transition: all 0.5s ease; }
+  section#side_bar .logo {
+    width: 100%;
+    overflow: hidden;
+    margin-bottom: 40px; }
+    section#side_bar .logo .icon, section#side_bar .logo .text {
+      display: inline-block;
+      height: 60px;
+      float: right; }
+    section#side_bar .logo .icon {
+      margin-left: 20px; }
+    section#side_bar .logo .text {
+      opacity: 1;
+      -webkit-transition: all 0.5s ease;
+      -moz-transition: all 0.5s ease;
+      -o-transition: all 0.5s ease;
+      transition: all 0.5s ease; }
+  section#side_bar .app_info {
+    opacity: 1;
+    -webkit-transition: all 0.5s ease;
+    -moz-transition: all 0.5s ease;
+    -o-transition: all 0.5s ease;
+    transition: all 0.5s ease; }
+  section#side_bar p {
+    color: #D1D3D4;
+    font-weight: 300;
+    text-align: right;
+    font-size: 85%; }
+  section#side_bar .button {
+    display: block;
+    width: auto;
+    min-width: 50px;
+    background: #00A79D;
+    color: #fafafa;
+    text-transform: uppercase;
+    float: right;
+    box-shadow: inset 0 60px 0 #00a79d;
+    font-size: 14px;
+    padding: 16px 16px;
+    outline: none;
+    -webkit-transition: all 0.3s ease;
+    -moz-transition: all 0.3s ease;
+    -o-transition: all 0.3s ease;
+    transition: all 0.3s ease; }
+    section#side_bar .button:hover {
+      box-shadow: inset 0 60px 0 #00746d; }
+  section#side_bar .github {
+    float: right;
+    display: inline-block;
+    width: 100%; }
+    section#side_bar .github a {
+      display: block;
+      color: #00A79D;
+      font-size: 50px;
+      width: 50px;
+      height: 50px;
+      float: right;
+      text-align: center;
+      -webkit-transition: all 0.3s ease;
+      -moz-transition: all 0.3s ease;
+      -o-transition: all 0.3s ease;
+      transition: all 0.3s ease; }
+      section#side_bar .github a:hover {
+        color: #0efff1; }
+  section#side_bar footer {
+    position: absolute;
+    bottom: 0;
+    width: calc(100% - 80px);
+    left: 40px;
+    padding-top: 30px;
+    border-top: 8px dotted #312b2c;
+    -webkit-transition: all 0.5s ease;
+    -moz-transition: all 0.5s ease;
+    -o-transition: all 0.5s ease;
+    transition: all 0.5s ease; }
+    section#side_bar footer span {
+      font-weight: 600; }
+    section#side_bar footer a {
+      color: #00A79D; }
+
+.full_side_bar {
+  left: -180px !important; }
+  .full_side_bar .logo .text, .full_side_bar .app_info, .full_side_bar footer {
+    opacity: 0 !important; }
+
+.section {
+  width: 100%;
+  min-height: 33.33vh;
+  overflow: hidden; }
+
+section.section_from {
+  background: #E6E7E8; }
+
+section.section_to {
+  background: #D1D3D4; }
+
+section.section_syntax {
+  background: #00A79D;
+  color: #fafafa;
+  font-family: "Roboto Condensed";
+  position: relative; }
+  section.section_syntax h3 {
+    font-size: 24px;
+    font-weight: 800;
+    font-family: "Roboto Condensed";
+    text-transform: uppercase; }
+  section.section_syntax .example {
+    position: absolute;
+    bottom: 0;
+    width: calc(100vw - 300px - 80px);
+    margin-left: 30px;
+    border-top: 6px dotted #00c1b5;
+    padding: 10px; }
+    section.section_syntax .example h3 {
+      color: #00c1b5; }
+    section.section_syntax .example p {
+      color: #5bfff5; }
+  section.section_syntax .syntax h3 {
+    color: #00f4e5; }
+  section.section_syntax .syntax p {
+    margin-bottom: 0; }
+
+.info, .content {
+  float: left;
+  height: inherit;
+  min-height: inherit; }
+
+.info {
+  width: 180px;
+  min-height: 100px;
+  margin-left: 120px;
+  padding: 30px 0 30px 30px; }
+  .info h4 {
+    font-size: 15px;
+    line-height: 1.1;
+    text-transform: uppercase;
+    margin-top: 10px;
+    font-weight: 600; }
+  .info p {
+    font-size: 13px;
+    text-align: justify;
+    line-height: 1.2; }
+
+.section_from .info h4 {
+  color: #00A79D; }
+.section_from .info p {
+  color: #aaa; }
+
+.section_to .info h4 {
+  color: #00A79D; }
+.section_to .info p {
+  color: #9d9d9d; }
+
+.section_syntax .info h4 {
+  color: #74fff7; }
+.section_syntax .info p {
+  color: #fafafa;
+  opacity: 0.8; }
+
+.content {
+  width: calc(100% - 300px);
+  overflow: hidden; }
+  .content .from-signs, .content .from-mainblocks {
+    float: left; }
+  .content .from-signs {
+    width: 25%;
+    height: inherit;
+    min-height: 33.33vh; }
+  .content .from-mainblocks {
+    width: 75%; }
+
+.dt {
+  display: table;
+  width: 100%; }
+
+.dtc {
+  display: table-cell; }
+
+.element .dt {
+  height: 50px; }
+.element .dtc {
+  vertical-align: middle; }
+
+.sign .dt {
+  height: 30px; }
+.sign .dtc {
+  vertical-align: middle; }
+
+.part-basic, .element, .sign {
+  display: inline-block;
+  background-color: #fafafa;
+  box-shadow: 4px 4px rgba(0, 0, 0, 0.05);
+  float: left;
+  margin: 10px;
+  padding: 10px;
+  text-align: center;
+  line-height: 1.1;
+  text-transform: uppercase;
+  font-family: "Roboto Condensed";
+  z-index: 10000;
+  cursor: move; }
+
+.element {
+  height: 70px;
+  width: 70px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #aaa; }
+
+.sign {
+  height: 50px;
+  width: 50px;
+  font-size: 20px;
+  font-weight: 800;
+  color: #00A79D; }
+
+.chooseTo .sign {
+  margin: 20px 10px; }
+
+.chooseFrom, .chooseTo {
+  z-index: -10000;
+  margin: 0 !important; }
+
+.chooseFrom, .chooseFromSigns, .chooseTo, .syntax {
+  width: 100%;
+  min-height: 100px;
+  overflow: hidden; }
+
+.chooseTo {
+  padding: 30px; }
+
+.syntax {
+  padding: 30px 40px; }
+
+.chooseFrom {
+  padding: 30px 15px 30px 30px; }
+
+.chooseFromSigns {
+  padding: 30px 30px 30px 15px; }
+
+/*# sourceMappingURL=style.css.map */
