@@ -1,0 +1,22 @@
+/*
+Errno::ENOENT: No such file or directory - compresed
+
+Backtrace:
+/usr/lib/ruby/gems/1.8/gems/sass-3.4.16/bin/../lib/sass/plugin/compiler.rb:482:in `read'
+/usr/lib/ruby/gems/1.8/gems/sass-3.4.16/bin/../lib/sass/plugin/compiler.rb:482:in `update_stylesheet'
+/usr/lib/ruby/gems/1.8/gems/sass-3.4.16/bin/../lib/sass/plugin/compiler.rb:215:in `update_stylesheets'
+/usr/lib/ruby/gems/1.8/gems/sass-3.4.16/bin/../lib/sass/plugin/compiler.rb:209:in `each'
+/usr/lib/ruby/gems/1.8/gems/sass-3.4.16/bin/../lib/sass/plugin/compiler.rb:209:in `update_stylesheets'
+/usr/lib/ruby/gems/1.8/gems/sass-3.4.16/bin/../lib/sass/plugin.rb:82:in `update_stylesheets'
+/usr/lib/ruby/gems/1.8/gems/sass-3.4.16/bin/../lib/sass/exec/sass_scss.rb:364:in `watch_or_update'
+/usr/lib/ruby/gems/1.8/gems/sass-3.4.16/bin/../lib/sass/exec/sass_scss.rb:51:in `process_result'
+/usr/lib/ruby/gems/1.8/gems/sass-3.4.16/bin/../lib/sass/exec/base.rb:52:in `parse'
+/usr/lib/ruby/gems/1.8/gems/sass-3.4.16/bin/../lib/sass/exec/base.rb:19:in `parse!'
+/usr/lib/ruby/gems/1.8/gems/sass-3.4.16/bin/sass:13
+/usr/bin/sass:19:in `load'
+/usr/bin/sass:19
+*/
+body:before {
+  white-space: pre;
+  font-family: monospace;
+  content: "Errno::ENOENT: No such file or directory - compresed"; }

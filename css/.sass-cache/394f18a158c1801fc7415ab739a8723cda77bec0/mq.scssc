@@ -1,0 +1,888 @@
+3.4.16 (Selective Steve)
+fd8703d4f0d74449dcfdecb42010ca6429888b97
+o:Sass::Tree::RootNode:@has_childrenT:@template"*@charset "UTF-8"; // Fixes an issue where Ruby locale is not set properly
+                  // See https://github.com/sass-mq/sass-mq/pull/10
+
+/// Base font size on the `<body>` element
+/// @type Number (unit)
+$mq-base-font-size: 16px !default;
+
+/// Responsive mode
+///
+/// Set to `false` to enable support for browsers that do not support @media queries,
+/// (IE <= 8, Firefox <= 3, Opera <= 9)
+///
+/// You could create a stylesheet served exclusively to older browsers,
+/// where @media queries are rasterized
+///
+/// @example scss
+///  // old-ie.scss
+///  $mq-responsive: false;
+///  @include 'main'; // @media queries in this file will be rasterized up to $mq-static-breakpoint
+///                   // larger breakpoints will be ignored
+///
+/// @type Boolean
+/// @link https://github.com/sass-mq/sass-mq#responsive-mode-off Disabled responsive mode documentation
+$mq-responsive: true !default;
+
+/// Breakpoint list
+///
+/// Name your breakpoints in a way that creates a ubiquitous language
+/// across team members. It will improve communication between
+/// stakeholders, designers, developers, and testers.
+///
+/// @type Map
+/// @link https://github.com/sass-mq/sass-mq#seeing-the-currently-active-breakpoint Full documentation and examples
+$mq-breakpoints: (
+    mobile:  48.063em,
+    tablet:  64.063em, 
+    desktop: 100.063em,
+    wide:    120.063em,
+
+    tabletP: 40.063em,
+    
+    desktopAd: 50.688em,
+    mobileLandscape: 30.063em    
+) !default;
+
+/// Static breakpoint (for fixed-width layouts)
+///
+/// Define the breakpoint from $mq-breakpoints that should
+/// be used as the target width for the fixed-width layout
+/// (i.e. when $mq-responsive is set to 'false') in a old-ie.scss
+///
+/// @example scss
+///  // tablet-only.scss
+///  //
+///  // Ignore all styles above tablet breakpoint,
+///  // and fix the styles (e.g. layout) at tablet width
+///  $mq-responsive: false;
+///  $mq-static-breakpoint: tablet;
+///  @include 'main'; // @media queries in this file will be rasterized up to tablet
+///                   // larger breakpoints will be ignored
+///
+/// @type String
+/// @link https://github.com/sass-mq/sass-mq#adding-custom-breakpoints Full documentation and examples
+$mq-static-breakpoint: desktop !default;
+
+/// Show breakpoints in the top right corner
+///
+/// If you want to display the currently active breakpoint in the top
+/// right corner of your site during development, add the breakpoints
+/// to this list, ordered by width, e.g. (mobile, tablet, desktop).
+///
+/// @type map
+$mq-show-breakpoints: () !default;
+
+/// Customize the media type (e.g. `@media screen` or `@media print`)
+/// By default sass-mq uses an "all" media type (`@media all and ‚Ä¶`)
+///
+/// @type String
+/// @link https://github.com/sass-mq/sass-mq#changing-media-type Full documentation and examples
+$mq-media-type: all !default;
+
+/// Convert pixels to ems
+///
+/// @param {Number} $px - value to convert
+/// @param {Number} $base-font-size ($mq-base-font-size) - `<body>` font size
+///
+/// @example scss
+///  $font-size-in-ems: mq-px2em(16px);
+///  p { font-size: mq-px2em(16px); }
+///
+/// @requires $mq-base-font-size
+/// @returns {Number}
+@function mq-px2em($px, $base-font-size: $mq-base-font-size) {
+    @if unitless($px) {
+        @warn "Assuming #{$px} to be in pixels, attempting to convert it into pixels.";
+        @return mq-px2em($px + 0px); // That may fail.
+    } @else if unit($px) == em {
+        @return $px;
+    }
+    @return ($px / $base-font-size) * 1em;
+}
+
+/// Get a breakpoint's width
+///
+/// @param {String} $name - Name of the breakpoint. One of $mq-breakpoints
+///
+/// @example scss
+///  $tablet-width: mq-get-breakpoint-width(tablet);
+///  @media (min-width: mq-get-breakpoint-width(desktop)) {}
+///
+/// @requires {Variable} $mq-breakpoints
+///
+/// @returns {Number} Value in pixels
+@function mq-get-breakpoint-width($name, $breakpoints: $mq-breakpoints) {
+    @if map-has-key($breakpoints, $name) {
+        @return map-get($breakpoints, $name);
+    } @else {
+        @warn "Breakpoint #{$name} wasn't found in $breakpoints.";
+    }
+}
+
+/// Media Query mixin
+///
+/// @param {String | Boolean} $from (false) - One of $mq-breakpoints
+/// @param {String | Boolean} $until (false) - One of $mq-breakpoints
+/// @param {String | Boolean} $and (false) - Additional media query parameters
+/// @param {String} $media-type ($mq-media-type) - Media type: screen, print‚Ä¶
+///
+/// @ignore Undocumented API, for advanced use only:
+/// @ignore @param {Map} $breakpoints ($mq-breakpoints)
+/// @ignore @param {String} $static-breakpoint ($mq-static-breakpoint)
+///
+/// @content styling rules, wrapped into a @media query when $responsive is true
+///
+/// @requires {Variable} $mq-media-type
+/// @requires {Variable} $mq-breakpoints
+/// @requires {Variable} $mq-static-breakpoint
+/// @requires {function} mq-px2em
+/// @requires {function} mq-get-breakpoint-width
+///
+/// @link https://github.com/sass-mq/sass-mq#responsive-mode-on-default Full documentation and examples
+///
+/// @example scss
+///  .element {
+///    @include mq($from: mobile) {
+///      color: red;
+///    }
+///    @include mq($until: tablet) {
+///      color: blue;
+///    }
+///    @include mq(mobile, tablet) {
+///      color: green;
+///    }
+///    @include mq($from: tablet, $and: '(orientation: landscape)') {
+///      color: teal;
+///    }
+///    @include mq(950px) {
+///      color: hotpink;
+///    }
+///    @include mq(tablet, $media-type: screen) {
+///      color: hotpink;
+///    }
+///    // Advanced use:
+///    $my-breakpoints: ( L: 900px, XL: 1200px );
+///    @include mq(L, $breakpoints: $my-breakpoints, $static-breakpoint: L) {
+///      color: hotpink;
+///    }
+///  }
+@mixin mq(
+    $from: false,
+    $until: false,
+    $and: false,
+    $media-type: $mq-media-type,
+    $breakpoints: $mq-breakpoints,
+    $responsive: $mq-responsive,
+    $static-breakpoint: $mq-static-breakpoint
+) {
+    $min-width: 0;
+    $max-width: 0;
+    $media-query: '';
+
+    // From: this breakpoint (inclusive)
+    @if $from {
+        @if type-of($from) == number {
+            $min-width: mq-px2em($from);
+        } @else {
+            $min-width: mq-px2em(mq-get-breakpoint-width($from, $breakpoints));
+        }
+    }
+
+    // Until: that breakpoint (exclusive)
+    @if $until {
+        @if type-of($until) == number {
+            $max-width: mq-px2em($until);
+        } @else {
+            $max-width: mq-px2em(mq-get-breakpoint-width($until, $breakpoints)) - .01em;
+        }
+    }
+
+    // Responsive support is disabled, rasterize the output outside @media blocks
+    // The browser will rely on the cascade itself.
+    @if $responsive == false {
+        $static-breakpoint-width: mq-get-breakpoint-width($static-breakpoint, $breakpoints);
+        $target-width: mq-px2em($static-breakpoint-width);
+        // Output only rules that start at or span our target width
+        @if ($and == false and ($min-width <= $target-width) and (($until == false) or ($max-width >= $target-width))) {
+            @content;
+        }
+    }
+
+    // Responsive support is enabled, output rules inside @media queries
+    @else {
+        @if $min-width != 0 { $media-query: '#{$media-query} and (min-width: #{$min-width})'; }
+        @if $max-width != 0 { $media-query: '#{$media-query} and (max-width: #{$max-width})'; }
+        @if $and            { $media-query: '#{$media-query} and #{$and}'; }
+
+        // Remove unnecessary media query prefix 'all and '
+        @if ($media-type == 'all' and $media-query != '') {
+            $media-type: '';
+            $media-query: str-slice(unquote($media-query), 6);
+        }
+
+        @media #{$media-type + $media-query} {
+            @content;
+        }
+    }
+}
+
+/// Add a breakpoint
+///
+/// @param {String} $name - Name of the breakpoint
+/// @param {Number} $width - Width of the breakpoint
+///
+/// @requires {Variable} $mq-breakpoints
+///
+/// @example scss
+///  @include mq-add-breakpoint(tvscreen, 1920px);
+///  @include mq(tvscreen) {}
+@mixin mq-add-breakpoint($name, $width) {
+    $new-breakpoint: ($name: $width);
+    $mq-breakpoints: map-merge($mq-breakpoints, $new-breakpoint) !global;
+}
+
+/// Show the active breakpoint in the top right corner of the viewport
+/// @link https://github.com/sass-mq/sass-mq#seeing-the-currently-active-breakpoint
+///
+/// @param {List} $show-breakpoints ($mq-show-breakpoints) - List of breakpoints to show in the top right corner
+/// @param {Map} $breakpoints ($mq-breakpoints) - Breakpoint names and sizes
+///
+/// @requires {Variable} $mq-breakpoints
+/// @requires {Variable} $mq-show-breakpoints
+///
+/// @example scss
+///  // Show breakpoints using global settings
+///  @include mq-show-breakpoints;
+///
+///  // Show breakpoints using custom settings
+///  @include mq-show-breakpoints((L, XL), (S: 300px, L: 800px, XL: 1200px));
+@mixin mq-show-breakpoints($show-breakpoints: $mq-show-breakpoints, $breakpoints: $mq-breakpoints) {
+    body:before {
+        background-color: #FCF8E3;
+        border-bottom: 1px solid #FBEED5;
+        border-left: 1px solid #FBEED5;
+        color: #C09853;
+        font: small-caption;
+        padding: 3px 6px;
+        pointer-events: none;
+        position: fixed;
+        right: 0;
+        top: 0;
+        z-index: 100;
+
+        // Loop through the breakpoints that should be shown
+        @each $show-breakpoint in $show-breakpoints {
+            $width: mq-get-breakpoint-width($show-breakpoint, $breakpoints);
+            @include mq($show-breakpoint, $breakpoints: $breakpoints) {
+                content: "#{$show-breakpoint} ‚â• #{$width} (#{mq-px2em($width)})";
+            }
+        }
+    }
+}
+
+@if length($mq-show-breakpoints) > 0 {
+    @include mq-show-breakpoints;
+}
+
+
+
+@include mq($until: mobile) { //mobile
+    @media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {}
+}
+@include mq($until: mobile, $and: '(orientation: landscape)') {
+    @media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {}
+}
+@include mq($from: mobile, $until: tablet, $and: '(orientation: landscape)') {//tablet, landscape
+    @media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {}
+}
+@include mq($from: mobile, $until: tablet, $and: '(orientation: portrait)') {//tablet, portrait
+    @media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {}
+}
+@include mq($from: tablet, $until: desktop) { //laptop
+    @-moz-document url-prefix() {}           
+    @media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {}
+}
+@include mq($from: desktop, $until: wide) { //desktop
+    @-moz-document url-prefix() {}
+    @media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {}
+}
+@include mq($from: wide) { //4k
+    @-moz-document url-prefix() {}           
+    @media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {}
+}:
+@linei:@children[%o:Sass::Tree::CharsetNode
+:
+@name"
+UTF-8;i;	[ :@options{ :@source_rangeo:Sass::Source::Range	:@end_poso:Sass::Source::Position;i:@offseti:@start_poso;;i;i:@importero: Sass::Importers::Filesystem:@same_name_warningso:Set:
+@hash{ :@real_root"D/var/www/vhosts/apacheloggenerator.com/Apache-Log-Generator/css:
+@root"D/var/www/vhosts/apacheloggenerator.com/Apache-Log-Generator/css:
+@file"L/var/www/vhosts/apacheloggenerator.com/Apache-Log-Generator/css/mq.scsso:Sass::Tree::CommentNode
+:
+@type:silent;i;	[ ;@:@value["q/* Fixes an issue where Ruby locale is not set properly
+ * See https://github.com/sass-mq/sass-mq/pull/10 */o;
+;;;i	;	[ ;@;["J/*/ Base font size on the `<body>` element
+ */ @type Number (unit) */o:Sass::Tree::VariableNode:
+@expro: Sass::Script::Tree::Literal	:@filename@;i;o: Sass::Script::Value::Number
+:@original"	16px:@numerator_units["px;@;i:@denominator_units[ ;o;	;o;;i;i;o;;i;i;@;@;"mq-base-font-size;i;	[ :@global0;@:@guardedT;o;	;o;;i;i';o;;i;i;@;@o;
+;;;i;	[ ;@;["p/*/ Responsive mode
+ */
+ */ Set to `false` to enable support for browsers that do not support @media queries,
+ */ (IE <= 8, Firefox <= 3, Opera <= 9)
+ */
+ */ You could create a stylesheet served exclusively to older browsers,
+ */ where @media queries are rasterized
+ */
+ */ @example scss
+ */  // old-ie.scss
+ */  $mq-responsive: false;
+ */  @include 'main'; // @media queries in this file will be rasterized up to $mq-static-breakpoint
+ */                   // larger breakpoints will be ignored
+ */
+ */ @type Boolean
+ */ @link https://github.com/sass-mq/sass-mq#responsive-mode-off Disabled responsive mode documentation */o;; o;!	;"@;i;o:Sass::Script::Value::Bool;@;T;o;	;o;;i;i;o;;i;i;@;@;"mq-responsive;i;	[ ;'0;@;(T;o;	;o;;i;i#;o;;i;i;@;@o;
+;;;i;	[ ;@;["[/*/ Breakpoint list
+ */
+ */ Name your breakpoints in a way that creates a ubiquitous language
+ */ across team members. It will improve communication between
+ */ stakeholders, designers, developers, and testers.
+ */
+ */ @type Map
+ */ @link https://github.com/sass-mq/sass-mq#seeing-the-currently-active-breakpoint Full documentation and examples */o;; o:#Sass::Script::Tree::MapLiteral
+;"@:@pairs[[o;!	;"@;i(;o: Sass::Script::Value::String;:identifier;@;"mobile;o;	;o;;i(;i;o;;i(;i
+;@;@o;!	;"@;i(;o;#
+;$"48.063em;%["em;@;f48.063000000000002 “Ú;&[ ;o;	;o;;i(;i;o;;i(;i;@;@[o;!	;"@;i);o;,;;-;@;"tablet;o;	;o;;i);i;o;;i);i
+;@;@o;!	;"@;i);o;#
+;$"64.063em;%["em;@;f64.063000000000002 Èy;&[ ;o;	;o;;i);i;o;;i);i;@;@[o;!	;"@;i*;o;,;;-;@;"desktop;o;	;o;;i*;i;o;;i*;i
+;@;@o;!	;"@;i*;o;#
+;$"100.063em;%["em;@;f100.063 Èy;&[ ;o;	;o;;i*;i;o;;i*;i;@;@[o;!	;"@;i+;o;,;;-;@;"	wide;o;	;o;;i+;i;o;;i+;i
+;@;@o;!	;"@;i+;o;#
+;$"120.063em;%["em;@;f120.063 Èy;&[ ;o;	;o;;i+;i;o;;i+;i;@;@[o;!	;"@;i-;o;,;;-;@;"tabletP;o;	;o;;i-;i;o;;i-;i
+;@;@o;!	;"@;i-;o;#
+;$"40.063em;%["em;@;f40.063000000000002 “Ú;&[ ;o;	;o;;i-;i;o;;i-;i;@;@[o;!	;"@;i/;o;,;;-;@;"desktopAd;o;	;o;;i/;i;o;;i/;i
+;@;@o;!	;"@;i/;o;#
+;$"50.688em;%["em;@;f50.688000000000002 “Ú;&[ ;o;	;o;;i/;i;o;;i/;i;@;@[o;!	;"@;i0;o;,;;-;@;"mobileLandscape;o;	;o;;i0;i;o;;i0;i
+;@;@o;!	;"@;i0;o;#
+;$"30.063em;%["em;@;f30.062999999999999 •„;&[ ;o;	;o;;i0;i#;o;;i0;i;@;@;i';@;o;	;o;;i(;i;o;;i';i;@;@;"mq-breakpoints;i';	[ ;'0;@;(T;o;	;o;;i1;i;o;;i';i;@;@o;
+;;;i3;	[ ;@;["ﬁ/*/ Static breakpoint (for fixed-width layouts)
+ */
+ */ Define the breakpoint from $mq-breakpoints that should
+ */ be used as the target width for the fixed-width layout
+ */ (i.e. when $mq-responsive is set to 'false') in a old-ie.scss
+ */
+ */ @example scss
+ */  // tablet-only.scss
+ */  //
+ */  // Ignore all styles above tablet breakpoint,
+ */  // and fix the styles (e.g. layout) at tablet width
+ */  $mq-responsive: false;
+ */  $mq-static-breakpoint: tablet;
+ */  @include 'main'; // @media queries in this file will be rasterized up to tablet
+ */                   // larger breakpoints will be ignored
+ */
+ */ @type String
+ */ @link https://github.com/sass-mq/sass-mq#adding-custom-breakpoints Full documentation and examples */o;; o;!	;"@;iE;o;,;;-;@;"desktop;o;	;o;;iE;i$;o;;iE;i;@;@;"mq-static-breakpoint;iE;	[ ;'0;@;(T;o;	;o;;iE;i-;o;;iE;i;@;@o;
+;;;iG;	[ ;@;["/*/ Show breakpoints in the top right corner
+ */
+ */ If you want to display the currently active breakpoint in the top
+ */ right corner of your site during development, add the breakpoints
+ */ to this list, ordered by width, e.g. (mobile, tablet, desktop).
+ */
+ */ @type map */o;; o:$Sass::Script::Tree::ListLiteral:@separator0;"@;iN:@elements[ ;@;o;	;o;;iN;i;o;;iN;i;@;@;"mq-show-breakpoints;iN;	[ ;'0;@;(T;o;	;o;;iN;i';o;;iN;i;@;@o;
+;;;iP;	[ ;@;["/*/ Customize the media type (e.g. `@media screen` or `@media print`)
+ */ By default sass-mq uses an "all" media type (`@media all and ‚Ä¶`)
+ */
+ */ @type String
+ */ @link https://github.com/sass-mq/sass-mq#changing-media-type Full documentation and examples */o;; o;!	;"@;iU;o;,;;-;@;"all;o;	;o;;iU;i;o;;iU;i;@;@;"mq-media-type;iU;	[ ;'0;@;(T;o;	;o;;iU;i";o;;iU;i;@;@o;
+;;;iW;	[ ;@;["8/*/ Convert pixels to ems
+ */
+ */ @param {Number} $px - value to convert
+ */ @param {Number} $base-font-size ($mq-base-font-size) - `<body>` font size
+ */
+ */ @example scss
+ */  $font-size-in-ems: mq-px2em(16px);
+ */  p { font-size: mq-px2em(16px); }
+ */
+ */ @requires $mq-base-font-size
+ */ @returns {Number} */o:Sass::Tree::FunctionNode;T:@splat0;"mq-px2em;ib;	[u:Sass::Tree::IfNode[o: Sass::Script::Tree::Funcall:@splat0:@filename"L/var/www/vhosts/apacheloggenerator.com/Apache-Log-Generator/css/mq.scss:@kwarg_splat0:
+@name"unitless:
+@lineic:@keywordso:Sass::Util::NormalizedMap:	@mapIC:OrderedHash{ :
+@keys[ :@key_strings{ :@options{ :
+@args[o:!Sass::Script::Tree::Variable;@;	"px;
+ic:@underscored_name"px;@:@source_rangeo:Sass::Source::Range	:@end_poso:Sass::Source::Position;
+ic:@offseti:@start_poso;;
+ic;i:@importero: Sass::Importers::Filesystem:@same_name_warningso:Set:
+@hash{ :@real_root"D/var/www/vhosts/apacheloggenerator.com/Apache-Log-Generator/css:
+@root"D/var/www/vhosts/apacheloggenerator.com/Apache-Log-Generator/css:
+@file@;o;	;o;;
+ic;i;o;;
+ic;i;@;"@u:Sass::Tree::IfNodeî[o:"Sass::Script::Tree::Operation:@filename"L/var/www/vhosts/apacheloggenerator.com/Apache-Log-Generator/css/mq.scss:
+@lineif:@operand2o: Sass::Script::Tree::Literal	;@;if:@valueo: Sass::Script::Value::String:
+@type:identifier:@options{ ;
+"em:@source_rangeo:Sass::Source::Range	:@end_poso:Sass::Source::Position;if:@offseti$:@start_poso;;if;i":@importero: Sass::Importers::Filesystem:@same_name_warningso:Set:
+@hash{ :@real_root"D/var/www/vhosts/apacheloggenerator.com/Apache-Log-Generator/css:
+@root"D/var/www/vhosts/apacheloggenerator.com/Apache-Log-Generator/css:
+@file@;@
+:@operator:eq:@operand1o: Sass::Script::Tree::Funcall:@splat0;@:@kwarg_splat0:
+@name"	unit;if:@keywordso:Sass::Util::NormalizedMap:	@mapIC:OrderedHash{ :
+@keys[ :@key_strings{ ;@
+:
+@args[o:!Sass::Script::Tree::Variable;@;#"px;if:@underscored_name"px;@
+;o;	;o;;if;i;o;;if;i;@;@;o;	;o;;if;i;o;;if;i;@;@;o;	;o;;if;i%;@#;@;@0[o:Sass::Tree::ReturnNode
+:
+@expro;+;@;#"px;ig;,"px;@
+;o;	;o;;ig;i;o;;ig;i;@;@;ig:@children[ ;@
+;o;	;o;;ig;i;o;;ig;i;@;@[o:Sass::Tree::WarnNode
+:
+@expro:,Sass::Script::Tree::StringInterpolation;@:@aftero: Sass::Script::Tree::Literal	;@;
+id:@valueo: Sass::Script::Value::String:
+@type:string;@;)"< to be in pixels, attempting to convert it into pixels.;o;	;o;;
+id;i\;o;;
+id;i$;@;"@;
+id:	@mido;;@;	"px;
+id;"px;@;o;	;o;;
+id;i#;o;;
+id;i ;@;"@;@:@beforeo;(	;@;
+id;)o;*;+;,;@;)"Assuming ;o;	;o;;
+id;i ;o;;
+id;i;@;"@;o;	;o;;
+id;i\;@2;@;"@;
+id:@children[ ;@;o;	;o;;
+id;i\;o;;
+id;i;@;"@o:Sass::Tree::ReturnNode
+;%o; ;0;@;0;	"mq-px2em;
+ie;o;;IC;{ ;[ ;{ ;@;[o:"Sass::Script::Tree::Operation;@;
+ie:@operand2o;(	;@;
+ie;)o: Sass::Script::Value::Number
+:@original"0px:@numerator_units["px;@;)i :@denominator_units[ ;o;	;o;;
+ie;i(;o;;
+ie;i%;@;"@;@:@operator:	plus:@operand1o;;@;	"px;
+ie;"px;@;o;	;o;;
+ie;i";o;;
+ie;i;@;"@;o;	;o;;
+ie;i(;@P;@;"@;o;	;o;;
+ie;i);o;;
+ie;i;@;"@;
+ie;/[ ;@;o;	;o;;
+ie;i);o;;
+ie;i;@;"@o:Sass::Tree::CommentNode
+;+:silent;
+ie;/[ ;@;)["/* That may fail. */o:Sass::Tree::ReturnNode
+; o:"Sass::Script::Tree::Operation;"@;ii:@operand2o;!	;"@;ii;o;#
+;$"1em;%["em;@;i;&[ ;o;	;o;;ii;i/;o;;ii;i,;@;@;@:@operator:
+times:@operand1o;5;"@;ii;6o:!Sass::Script::Tree::Variable;"@;"base-font-size;ii:@underscored_name"base_font_size;@;o;	;o;;ii;i(;o;;ii;i;@;@;@;7:div;9o;:;"@;"px;ii;;"px;@;o;	;o;;ii;i;o;;ii;i;@;@;o;	;o;;ii;i(;@
+;@;@;o;	;o;;ii;i/;@
+;@;@;ii;	[ ;@;o;	;o;;ii;i/;o;;ii;i
+;@;@;@:
+@args[[o;:;"@;"px;ib;;"px;@;o;	;o;;ib;i;o;;ib;i;@;@0[o;:;"@;"base-font-size;ib;;"base_font_size;@;o;	;o;;ib;i-;o;;ib;i;@;@o;:;"@;"mq-base-font-size;ib;;"mq_base_font_size;@;o;	;o;;ib;iA;o;;ib;i/;@;@;o;	;o;;ib;iC;o;;ib;i;@;@o;
+;;;il;	[ ;@;["M/*/ Get a breakpoint's width
+ */
+ */ @param {String} $name - Name of the breakpoint. One of $mq-breakpoints
+ */
+ */ @example scss
+ */  $tablet-width: mq-get-breakpoint-width(tablet);
+ */  @media (min-width: mq-get-breakpoint-width(desktop)) {}
+ */
+ */ @requires {Variable} $mq-breakpoints
+ */
+ */ @returns {Number} Value in pixels */o;1;T;20;"mq-get-breakpoint-width;iw;	[u;3™[o: Sass::Script::Tree::Funcall:@splat0:@filename"L/var/www/vhosts/apacheloggenerator.com/Apache-Log-Generator/css/mq.scss:@kwarg_splat0:
+@name"map-has-key:
+@lineix:@keywordso:Sass::Util::NormalizedMap:	@mapIC:OrderedHash{ :
+@keys[ :@key_strings{ :@options{ :
+@args[o:!Sass::Script::Tree::Variable;@;	"breakpoints;
+ix:@underscored_name"breakpoints;@:@source_rangeo:Sass::Source::Range	:@end_poso:Sass::Source::Position;
+ix:@offseti&:@start_poso;;
+ix;i:@importero: Sass::Importers::Filesystem:@same_name_warningso:Set:
+@hash{ :@real_root"D/var/www/vhosts/apacheloggenerator.com/Apache-Log-Generator/css:
+@root"D/var/www/vhosts/apacheloggenerator.com/Apache-Log-Generator/css:
+@file@o;;@;	"	name;
+ix;"	name;@;o;	;o;;
+ix;i-;o;;
+ix;i(;@;"@;o;	;o;;
+ix;i.;o;;
+ix;i;@;"@u:Sass::Tree::IfNode·[00[o:Sass::Tree::WarnNode
+:
+@expro:,Sass::Script::Tree::StringInterpolation:@filename"L/var/www/vhosts/apacheloggenerator.com/Apache-Log-Generator/css/mq.scss:@aftero: Sass::Script::Tree::Literal	;@	:
+@linei{:@valueo: Sass::Script::Value::String:
+@type:string:@options{ ;"# wasn't found in $breakpoints.:@source_rangeo:Sass::Source::Range	:@end_poso:Sass::Source::Position;i{:@offsetiG:@start_poso;;i{;i(:@importero: Sass::Importers::Filesystem:@same_name_warningso:Set:
+@hash{ :@real_root"D/var/www/vhosts/apacheloggenerator.com/Apache-Log-Generator/css:
+@root"D/var/www/vhosts/apacheloggenerator.com/Apache-Log-Generator/css:
+@file@	;i{:	@mido:!Sass::Script::Tree::Variable;@	:
+@name"	name;i{:@underscored_name"	name;@;o;	;o;;i{;i';o;;i{;i";@;@	;@:@beforeo;
+	;@	;i{;o;;;;@;"Breakpoint ;o;	;o;;i{;i";o;;i{;i;@;@	;o;	;o;;i{;iG;@!;@;@	;i{:@children[ ;@;o;	;o;;i{;iG;o;;i{;i;@;@	[o:Sass::Tree::ReturnNode
+:
+@expro; ;0;@;0;	"map-get;
+iy;o;;IC;{ ;[ ;{ ;@;[o;;@;	"breakpoints;
+iy;"breakpoints;@;o;	;o;;
+iy;i*;o;;
+iy;i;@;"@o;;@;	"	name;
+iy;"	name;@;o;	;o;;
+iy;i1;o;;
+iy;i,;@;"@;o;	;o;;
+iy;i2;o;;
+iy;i;@;"@;
+iy:@children[ ;@;o;	;o;;
+iy;i2;o;;
+iy;i;@;"@;@;=[[o;:;"@;"	name;iw;;"	name;@;o;	;o;;iw;i-;o;;iw;i(;@;@0[o;:;"@;"breakpoints;iw;;"breakpoints;@;o;	;o;;iw;i;;o;;iw;i/;@;@o;:;"@;"mq-breakpoints;iw;;"mq_breakpoints;@;o;	;o;;iw;iL;o;;iw;i=;@;@;o;	;o;;iw;iN;o;;iw;i;@;@o;
+;;;i;	[ ;@;["?/*/ Media Query mixin
+ */
+ */ @param {String | Boolean} $from (false) - One of $mq-breakpoints
+ */ @param {String | Boolean} $until (false) - One of $mq-breakpoints
+ */ @param {String | Boolean} $and (false) - Additional media query parameters
+ */ @param {String} $media-type ($mq-media-type) - Media type: screen, print‚Ä¶
+ */
+ */ @ignore Undocumented API, for advanced use only:
+ */ @ignore @param {Map} $breakpoints ($mq-breakpoints)
+ */ @ignore @param {String} $static-breakpoint ($mq-static-breakpoint)
+ */
+ */ @content styling rules, wrapped into a @media query when $responsive is true
+ */
+ */ @requires {Variable} $mq-media-type
+ */ @requires {Variable} $mq-breakpoints
+ */ @requires {Variable} $mq-static-breakpoint
+ */ @requires {function} mq-px2em
+ */ @requires {function} mq-get-breakpoint-width
+ */
+ */ @link https://github.com/sass-mq/sass-mq#responsive-mode-on-default Full documentation and examples
+ */
+ */ @example scss
+ */  .element {
+ */    @include mq($from: mobile) {
+ */      color: red;
+ */    }
+ */    @include mq($until: tablet) {
+ */      color: blue;
+ */    }
+ */    @include mq(mobile, tablet) {
+ */      color: green;
+ */    }
+ */    @include mq($from: tablet, $and: '(orientation: landscape)') {
+ */      color: teal;
+ */    }
+ */    @include mq(950px) {
+ */      color: hotpink;
+ */    }
+ */    @include mq(tablet, $media-type: screen) {
+ */      color: hotpink;
+ */    }
+ */    // Advanced use:
+ */    $my-breakpoints: ( L: 900px, XL: 1200px );
+ */    @include mq(L, $breakpoints: $my-breakpoints, $static-breakpoint: L) {
+ */      color: hotpink;
+ */    }
+ */  } */o:Sass::Tree::MixinDefNode;T;20;"mq;i©;	[o;; o;!	;"@;i≤;o;#
+;$"0;%[ ;@;i ;&[ ;o;	;o;;i≤;i;o;;i≤;i;@;@;"min-width;i≤;	[ ;'0;@;(0;o;	;o;;i≤;i;o;;i≤;i;@;@o;; o;!	;"@;i≥;o;#
+;$"0;%[ ;@;i ;&@W;o;	;o;;i≥;i;o;;i≥;i;@;@;"max-width;i≥;	[ ;'0;@;(0;o;	;o;;i≥;i;o;;i≥;i;@;@o;; o;!	;"@;i¥;o;,;:string;@;" ;o;	;o;;i¥;i;o;;i¥;i;@;@;"media-query;i¥;	[ ;'0;@;(0;o;	;o;;i¥;i;o;;i¥;i;@;@o;
+;;;i∂;	[ ;@;[",/* From: this breakpoint (inclusive) */u;3Ÿ[o:!Sass::Script::Tree::Variable:@filename"L/var/www/vhosts/apacheloggenerator.com/Apache-Log-Generator/css/mq.scss:
+@name"	from:
+@linei∑:@underscored_name"	from:@options{ :@source_rangeo:Sass::Source::Range	:@end_poso:Sass::Source::Position;i∑:@offseti:@start_poso;;i∑;i:@importero: Sass::Importers::Filesystem:@same_name_warningso:Set:
+@hash{ :@real_root"D/var/www/vhosts/apacheloggenerator.com/Apache-Log-Generator/css:
+@root"D/var/www/vhosts/apacheloggenerator.com/Apache-Log-Generator/css:
+@file@0[u:Sass::Tree::IfNode™	[o:"Sass::Script::Tree::Operation:@filename"L/var/www/vhosts/apacheloggenerator.com/Apache-Log-Generator/css/mq.scss:
+@linei∏:@operand2o: Sass::Script::Tree::Literal	;@;i∏:@valueo: Sass::Script::Value::String:
+@type:identifier:@options{ ;
+"number:@source_rangeo:Sass::Source::Range	:@end_poso:Sass::Source::Position;i∏:@offseti*:@start_poso;;i∏;i$:@importero: Sass::Importers::Filesystem:@same_name_warningso:Set:
+@hash{ :@real_root"D/var/www/vhosts/apacheloggenerator.com/Apache-Log-Generator/css:
+@root"D/var/www/vhosts/apacheloggenerator.com/Apache-Log-Generator/css:
+@file@;@
+:@operator:eq:@operand1o: Sass::Script::Tree::Funcall:@splat0;@:@kwarg_splat0:
+@name"type-of;i∏:@keywordso:Sass::Util::NormalizedMap:	@mapIC:OrderedHash{ :
+@keys[ :@key_strings{ ;@
+:
+@args[o:!Sass::Script::Tree::Variable;@;#"	from;i∏:@underscored_name"	from;@
+;o;	;o;;i∏;i;o;;i∏;i;@;@;o;	;o;;i∏;i ;o;;i∏;i;@;@;o;	;o;;i∏;i+;@#;@;@u:Sass::Tree::IfNodeQ[00[o:Sass::Tree::VariableNode:
+@expro: Sass::Script::Tree::Funcall:@splat0:@filename"L/var/www/vhosts/apacheloggenerator.com/Apache-Log-Generator/css/mq.scss:@kwarg_splat0:
+@name"mq-px2em:
+@lineiª:@keywordso:Sass::Util::NormalizedMap:	@mapIC:OrderedHash{ :
+@keys[ :@key_strings{ :@options{ :
+@args[o;;0;	@	;
+0;"mq-get-breakpoint-width;iª;o;;IC;{ ;[ ;{ ;@;[o:!Sass::Script::Tree::Variable;	@	;"	from;iª:@underscored_name"	from;@:@source_rangeo:Sass::Source::Range	:@end_poso:Sass::Source::Position;iª:@offsetiD:@start_poso;;iª;i?:@importero: Sass::Importers::Filesystem:@same_name_warningso:Set:
+@hash{ :@real_root"D/var/www/vhosts/apacheloggenerator.com/Apache-Log-Generator/css:
+@root"D/var/www/vhosts/apacheloggenerator.com/Apache-Log-Generator/css:
+@file@	o;;	@	;"breakpoints;iª;"breakpoints;@;o;	;o;;iª;iR;o;;iª;iF;@;$@	;o;	;o;;iª;iS;o;;iª;i';@;$@	;o;	;o;;iª;iT;o;;iª;i;@;$@	;"min-width;iª:@children[ :@global0;@:@guarded0;o;	;o;;iª;iT;o;;iª;i;@;$@	[o:Sass::Tree::VariableNode:
+@expro; ;!0;@;"0;#"mq-px2em;iπ;$o;%;&IC;'{ ;([ ;){ ;@
+;*[o;+;@;#"	from;iπ;,"	from;@
+;o;	;o;;iπ;i,;o;;iπ;i';@;@;o;	;o;;iπ;i-;o;;iπ;i;@;@;#"min-width;iπ:@children[ :@global0;@
+:@guarded0;o;	;o;;iπ;i-;o;;iπ;i;@;@o;
+;;;iø;	[ ;@;["-/* Until: that breakpoint (exclusive) */u;3#[o:!Sass::Script::Tree::Variable:@filename"L/var/www/vhosts/apacheloggenerator.com/Apache-Log-Generator/css/mq.scss:
+@name"
+until:
+@linei¿:@underscored_name"
+until:@options{ :@source_rangeo:Sass::Source::Range	:@end_poso:Sass::Source::Position;i¿:@offseti:@start_poso;;i¿;i:@importero: Sass::Importers::Filesystem:@same_name_warningso:Set:
+@hash{ :@real_root"D/var/www/vhosts/apacheloggenerator.com/Apache-Log-Generator/css:
+@root"D/var/www/vhosts/apacheloggenerator.com/Apache-Log-Generator/css:
+@file@0[u:Sass::Tree::IfNodeÚ
+[o:"Sass::Script::Tree::Operation:@filename"L/var/www/vhosts/apacheloggenerator.com/Apache-Log-Generator/css/mq.scss:
+@linei¡:@operand2o: Sass::Script::Tree::Literal	;@;i¡:@valueo: Sass::Script::Value::String:
+@type:identifier:@options{ ;
+"number:@source_rangeo:Sass::Source::Range	:@end_poso:Sass::Source::Position;i¡:@offseti+:@start_poso;;i¡;i%:@importero: Sass::Importers::Filesystem:@same_name_warningso:Set:
+@hash{ :@real_root"D/var/www/vhosts/apacheloggenerator.com/Apache-Log-Generator/css:
+@root"D/var/www/vhosts/apacheloggenerator.com/Apache-Log-Generator/css:
+@file@;@
+:@operator:eq:@operand1o: Sass::Script::Tree::Funcall:@splat0;@:@kwarg_splat0:
+@name"type-of;i¡:@keywordso:Sass::Util::NormalizedMap:	@mapIC:OrderedHash{ :
+@keys[ :@key_strings{ ;@
+:
+@args[o:!Sass::Script::Tree::Variable;@;#"
+until;i¡:@underscored_name"
+until;@
+;o;	;o;;i¡;i ;o;;i¡;i;@;@;o;	;o;;i¡;i!;o;;i¡;i;@;@;o;	;o;;i¡;i,;@#;@;@u:Sass::Tree::IfNodeï[00[o:Sass::Tree::VariableNode:
+@expro:"Sass::Script::Tree::Operation:@filename"L/var/www/vhosts/apacheloggenerator.com/Apache-Log-Generator/css/mq.scss:
+@lineiƒ:@operand2o: Sass::Script::Tree::Literal	;@	;	iƒ:@valueo: Sass::Script::Value::Number
+:@original"0.01em:@numerator_units["em:@options{ ;f0.01 {:@denominator_units[ :@source_rangeo:Sass::Source::Range	:@end_poso:Sass::Source::Position;	iƒ:@offseti]:@start_poso;;	iƒ;iX:@importero: Sass::Importers::Filesystem:@same_name_warningso:Set:
+@hash{ :@real_root"D/var/www/vhosts/apacheloggenerator.com/Apache-Log-Generator/css:
+@root"D/var/www/vhosts/apacheloggenerator.com/Apache-Log-Generator/css:
+@file@	;@:@operator:
+minus:@operand1o: Sass::Script::Tree::Funcall:@splat0;@	:@kwarg_splat0:
+@name"mq-px2em;	iƒ:@keywordso:Sass::Util::NormalizedMap:	@mapIC:OrderedHash{ :
+@keys[ :@key_strings{ ;@:
+@args[o;#;$0;@	;%0;&"mq-get-breakpoint-width;	iƒ;'o;(;)IC;*{ ;+[ ;,{ ;@;-[o:!Sass::Script::Tree::Variable;@	;&"
+until;	iƒ:@underscored_name"
+until;@;o;	;o;;	iƒ;iE;o;;	iƒ;i?;@;@	o;.;@	;&"breakpoints;	iƒ;/"breakpoints;@;o;	;o;;	iƒ;iS;o;;	iƒ;iG;@;@	;o;	;o;;	iƒ;iT;o;;	iƒ;i';@;@	;o;	;o;;	iƒ;iU;o;;	iƒ;i;@;@	;o;	;o;;	iƒ;i];@9;@;@	;&"max-width;	iƒ:@children[ :@global0;@:@guarded0;o;	;o;;	iƒ;i];o;;	iƒ;i;@;@	[o:Sass::Tree::VariableNode:
+@expro; ;!0;@;"0;#"mq-px2em;i¬;$o;%;&IC;'{ ;([ ;){ ;@
+;*[o;+;@;#"
+until;i¬;,"
+until;@
+;o;	;o;;i¬;i-;o;;i¬;i';@;@;o;	;o;;i¬;i.;o;;i¬;i;@;@;#"max-width;i¬:@children[ :@global0;@
+:@guarded0;o;	;o;;i¬;i.;o;;i¬;i;@;@o;
+;;;i»;	[ ;@;["Ä/* Responsive support is disabled, rasterize the output outside @media blocks
+ * The browser will rely on the cascade itself. */u;3ã,[o:"Sass::Script::Tree::Operation:@filename"L/var/www/vhosts/apacheloggenerator.com/Apache-Log-Generator/css/mq.scss:
+@linei :@operand2o: Sass::Script::Tree::Literal	;@;i :@valueo:Sass::Script::Value::Bool:@options{ ;
+F:@source_rangeo:Sass::Source::Range	:@end_poso:Sass::Source::Position;i :@offseti":@start_poso;;i ;i:@importero: Sass::Importers::Filesystem:@same_name_warningso:Set:
+@hash{ :@real_root"D/var/www/vhosts/apacheloggenerator.com/Apache-Log-Generator/css:
+@root"D/var/www/vhosts/apacheloggenerator.com/Apache-Log-Generator/css:
+@file@;@
+:@operator:eq:@operand1o:!Sass::Script::Tree::Variable;@:
+@name"responsive;i :@underscored_name"responsive;@
+;o;	;o;;i ;i;o;;i ;i;@;@;o;	;o;;i ;i#;@;@;@u:Sass::Tree::IfNode•[00[u:Sass::Tree::IfNodeM[o:"Sass::Script::Tree::Operation:@filename"L/var/www/vhosts/apacheloggenerator.com/Apache-Log-Generator/css/mq.scss:
+@linei’:@operand2o: Sass::Script::Tree::Literal	;@;i’:@valueo: Sass::Script::Value::Number
+:@original"0:@numerator_units[ :@options{ ;
+i :@denominator_units[ :@source_rangeo:Sass::Source::Range	:@end_poso:Sass::Source::Position;i’:@offseti!:@start_poso;;i’;i :@importero: Sass::Importers::Filesystem:@same_name_warningso:Set:
+@hash{ :@real_root"D/var/www/vhosts/apacheloggenerator.com/Apache-Log-Generator/css:
+@root"D/var/www/vhosts/apacheloggenerator.com/Apache-Log-Generator/css:
+@file@;@:@operator:neq:@operand1o:!Sass::Script::Tree::Variable;@:
+@name"min-width;i’:@underscored_name"min_width;@;o;	;o;;i’;i;o;;i’;i;@;@;o;	;o;;i’;i";@;@;@0[o:Sass::Tree::VariableNode:
+@expro:,Sass::Script::Tree::StringInterpolation;@:@aftero;&;@;'o;		;@;i’;
+o: Sass::Script::Value::String:
+@type:string;@;
+");o;	;o;;i’;ib;o;;i’;i`;@;@;i’:	@mido;!;@;""min-width;i’;#"min_width;@;o;	;o;;i’;i_;o;;i’;iU;@;@;@:@beforeo;		;@;i’;
+o;(;);*;@;
+" and (min-width: ;o;	;o;;i’;iU;o;;i’;iB;@;@;o;	;o;;i’;ib;@3;@;@;i’;+o;!;@;""media-query;i’;#"media_query;@;o;	;o;;i’;iA;o;;i’;i5;@;@;@;,o;		;@;i’;
+o;(;);*;@;
+" ;o;	;o;;i’;i5;o;;i’;i2;@;@;o;	;o;;i’;ib;@A;@;@;""media-query;i’:@children[ :@global0;@:@guarded0;o;	;o;;i’;ib;o;;i’;i%;@;@u; M[o:"Sass::Script::Tree::Operation:@filename"L/var/www/vhosts/apacheloggenerator.com/Apache-Log-Generator/css/mq.scss:
+@linei÷:@operand2o: Sass::Script::Tree::Literal	;@;i÷:@valueo: Sass::Script::Value::Number
+:@original"0:@numerator_units[ :@options{ ;
+i :@denominator_units[ :@source_rangeo:Sass::Source::Range	:@end_poso:Sass::Source::Position;i÷:@offseti!:@start_poso;;i÷;i :@importero: Sass::Importers::Filesystem:@same_name_warningso:Set:
+@hash{ :@real_root"D/var/www/vhosts/apacheloggenerator.com/Apache-Log-Generator/css:
+@root"D/var/www/vhosts/apacheloggenerator.com/Apache-Log-Generator/css:
+@file@;@:@operator:neq:@operand1o:!Sass::Script::Tree::Variable;@:
+@name"max-width;i÷:@underscored_name"max_width;@;o;	;o;;i÷;i;o;;i÷;i;@;@;o;	;o;;i÷;i";@;@;@0[o:Sass::Tree::VariableNode:
+@expro:,Sass::Script::Tree::StringInterpolation;@:@aftero;&;@;'o;		;@;i÷;
+o: Sass::Script::Value::String:
+@type:string;@;
+");o;	;o;;i÷;ib;o;;i÷;i`;@;@;i÷:	@mido;!;@;""max-width;i÷;#"max_width;@;o;	;o;;i÷;i_;o;;i÷;iU;@;@;@:@beforeo;		;@;i÷;
+o;(;);*;@;
+" and (max-width: ;o;	;o;;i÷;iU;o;;i÷;iB;@;@;o;	;o;;i÷;ib;@3;@;@;i÷;+o;!;@;""media-query;i÷;#"media_query;@;o;	;o;;i÷;iA;o;;i÷;i5;@;@;@;,o;		;@;i÷;
+o;(;);*;@;
+" ;o;	;o;;i÷;i5;o;;i÷;i2;@;@;o;	;o;;i÷;ib;@A;@;@;""media-query;i÷:@children[ :@global0;@:@guarded0;o;	;o;;i÷;ib;o;;i÷;i%;@;@u; [o:!Sass::Script::Tree::Variable:@filename"L/var/www/vhosts/apacheloggenerator.com/Apache-Log-Generator/css/mq.scss:
+@name"and:
+@linei◊:@underscored_name"and:@options{ :@source_rangeo:Sass::Source::Range	:@end_poso:Sass::Source::Position;i◊:@offseti:@start_poso;;i◊;i:@importero: Sass::Importers::Filesystem:@same_name_warningso:Set:
+@hash{ :@real_root"D/var/www/vhosts/apacheloggenerator.com/Apache-Log-Generator/css:
+@root"D/var/www/vhosts/apacheloggenerator.com/Apache-Log-Generator/css:
+@file@0[o:Sass::Tree::VariableNode:
+@expro:,Sass::Script::Tree::StringInterpolation;@:@aftero;;@;o: Sass::Script::Tree::Literal	;@;i◊:@valueo: Sass::Script::Value::String:
+@type:string;
+@
+;" ;o;	;o;;i◊;iO;o;;i◊;iN;@;@;i◊:	@mido; ;@;"and;i◊;	"and;
+@
+;o;	;o;;i◊;iM;o;;i◊;iI;@;@;
+@
+:@beforeo;	;@;i◊;o;; ;!;
+@
+;"
+ and ;o;	;o;;i◊;iI;o;;i◊;iB;@;@;o;	;o;;i◊;iO;@(;@;@;i◊;"o; ;@;"media-query;i◊;	"media_query;
+@
+;o;	;o;;i◊;iA;o;;i◊;i5;@;@;
+@
+;#o;	;@;i◊;o;; ;!;
+@
+;" ;o;	;o;;i◊;i5;o;;i◊;i2;@;@;o;	;o;;i◊;iO;@6;@;@;"media-query;i◊:@children[ :@global0;
+@
+:@guarded0;o;	;o;;i◊;iO;o;;i◊;i%;@;@o:Sass::Tree::CommentNode
+:
+@type:silent:
+@lineiŸ:@children[ :@options{ :@value[";/* Remove unnecessary media query prefix 'all and ' */u; ∞[o:"Sass::Script::Tree::Operation:@filename"L/var/www/vhosts/apacheloggenerator.com/Apache-Log-Generator/css/mq.scss:
+@linei⁄:@operand2o; ;@;i⁄;o: Sass::Script::Tree::Literal	;@;i⁄:@valueo: Sass::Script::Value::String:
+@type:string:@options{ ;
+" :@source_rangeo:Sass::Source::Range	:@end_poso:Sass::Source::Position;i⁄:@offseti>:@start_poso;;i⁄;i<:@importero: Sass::Importers::Filesystem:@same_name_warningso:Set:
+@hash{ :@real_root"D/var/www/vhosts/apacheloggenerator.com/Apache-Log-Generator/css:
+@root"D/var/www/vhosts/apacheloggenerator.com/Apache-Log-Generator/css:
+@file@;@:@operator:neq:@operand1o:!Sass::Script::Tree::Variable;@:
+@name"media-query;i⁄:@underscored_name"media_query;@;o;	;o;;i⁄;i8;o;;i⁄;i,;@;@;o;	;o;;i⁄;i>;@;@;@;@;:and;o; ;@;i⁄;o;		;@;i⁄;
+o;;;;@;
+"all;o;	;o;;i⁄;i';o;;i⁄;i";@;@;@;:eq;o; ;@;!"media-type;i⁄;""media_type;@;o;	;o;;i⁄;i;o;;i⁄;i;@;@;o;	;o;;i⁄;i(;@);@;@;o;	;o;;i⁄;i>;@);@;@0[o:Sass::Tree::VariableNode:
+@expro;		;@;i€;
+o;;;;@;
+" ;o;	;o;;i€;i!;o;;i€;i;@;@;!"media-type;i€:@children[ :@global0;@:@guarded0;o;	;o;;i€;i!;o;;i€;i;@;@o;%;&o: Sass::Script::Tree::Funcall:@splat0;@:@kwarg_splat0;!"str-slice;i‹:@keywordso:Sass::Util::NormalizedMap:	@mapIC:OrderedHash{ :
+@keys[ :@key_strings{ ;@:
+@args[o;*;+0;@;,0;!"unquote;i‹;-o;.;/IC;0{ ;1[ ;2{ ;@;3[o; ;@;!"media-query;i‹;""media_query;@;o;	;o;;i‹;i>;o;;i‹;i2;@;@;o;	;o;;i‹;i?;o;;i‹;i*;@;@o;		;@;i‹;
+o: Sass::Script::Value::Number
+:@original"6:@numerator_units[ ;@;
+i:@denominator_units[ ;o;	;o;;i‹;iB;o;;i‹;iA;@;@;o;	;o;;i‹;iC;o;;i‹;i ;@;@;!"media-query;i‹;'[ ;(0;@;)0;o;	;o;;i‹;iC;o;;i‹;i;@;@o:Sass::Tree::MediaNode:@has_childrenT:@query[o:&Sass::Script::Tree::Interpolation:@warn_for_color:warn_for_color:@filename"L/var/www/vhosts/apacheloggenerator.com/Apache-Log-Generator/css/mq.scss:@after0;	iﬂ:@originally_textF:	@mido:"Sass::Script::Tree::Operation;@;	iﬂ:@operand2o:!Sass::Script::Tree::Variable;@:
+@name"media-query;	iﬂ:@underscored_name"media_query;@:@source_rangeo:Sass::Source::Range	:@end_poso:Sass::Source::Position;	iﬂ:@offseti1:@start_poso;;	iﬂ; i%:@importero: Sass::Importers::Filesystem:@same_name_warningso:Set:
+@hash{ :@real_root"D/var/www/vhosts/apacheloggenerator.com/Apache-Log-Generator/css:
+@root"D/var/www/vhosts/apacheloggenerator.com/Apache-Log-Generator/css:
+@file@;@:@operator:	plus:@operand1o;;@;"media-type;	iﬂ;"media_type;@;o;	;o;;	iﬂ; i";!o;;	iﬂ; i;"@;)@;o;	;o;;	iﬂ; i1;!@%;"@;)@;@:@whitespace_afterF:@before0;o;	;o;;	iﬂ; i2;!o;;	iﬂ; i;"@;)@:@whitespace_beforeF;	iﬂ;
+[o:Sass::Tree::ContentNode	;	i‡;
+[ ;@;o;	;o;;	i‡; i;!o;;	i‡; i;"@;)@;@:
+@tabsi ;" ;o;	;o;;	iﬂ; i3;!o;;	iﬂ; i;"@;)@[	o:Sass::Tree::VariableNode:
+@expro: Sass::Script::Tree::Funcall:@splat0;@:@kwarg_splat0;"mq-get-breakpoint-width;iÀ:@keywordso:Sass::Util::NormalizedMap:	@mapIC:OrderedHash{ :
+@keys[ :@key_strings{ ;@
+:
+@args[o;;@;"static-breakpoint;iÀ; "static_breakpoint;@
+;o;	;o;;iÀ;iR;o;;iÀ;i@;@;@o;;@;"breakpoints;iÀ; "breakpoints;@
+;o;	;o;;iÀ;i`;o;;iÀ;iT;@;@;o;	;o;;iÀ;ia;o;;iÀ;i(;@;@;"static-breakpoint-width;iÀ:@children[ :@global0;@
+:@guarded0;o;	;o;;iÀ;ia;o;;iÀ;i;@;@o;";#o;$;%0;@;&0;"mq-px2em;iÃ;'o;(;)IC;*{ ;+[ ;,{ ;@
+;-[o;;@;"static-breakpoint-width;iÃ; "static_breakpoint_width;@
+;o;	;o;;iÃ;i>;o;;iÃ;i&;@;@;o;	;o;;iÃ;i?;o;;iÃ;i;@;@;"target-width;iÃ;.[ ;/0;@
+;00;o;	;o;;iÃ;i?;o;;iÃ;i;@;@o:Sass::Tree::CommentNode
+:
+@type:silent;iÕ;.[ ;@
+;
+["C/* Output only rules that start at or span our target width */u;!¡[o:"Sass::Script::Tree::Operation:@filename"L/var/www/vhosts/apacheloggenerator.com/Apache-Log-Generator/css/mq.scss:
+@lineiŒ:@operand2o; ;@;iŒ;o; ;@;iŒ;o:!Sass::Script::Tree::Variable;@:
+@name"target-width;iŒ:@underscored_name"target_width:@options{ :@source_rangeo:Sass::Source::Range	:@end_poso:Sass::Source::Position;iŒ:@offsetiy:@start_poso;;iŒ;il:@importero: Sass::Importers::Filesystem:@same_name_warningso:Set:
+@hash{ :@real_root"D/var/www/vhosts/apacheloggenerator.com/Apache-Log-Generator/css:
+@root"D/var/www/vhosts/apacheloggenerator.com/Apache-Log-Generator/css:
+@file@;@:@operator:gte:@operand1o;	;@;
+"max-width;iŒ;"max_width;@;o;	;o;;iŒ;ih;o;;iŒ;i^;@;@;o;	;o;;iŒ;iy;@;@;@;@;:or;o; ;@;iŒ;o: Sass::Script::Tree::Literal	;@;iŒ:@valueo:Sass::Script::Value::Bool;@; F;o;	;o;;iŒ;iX;o;;iŒ;iS;@;@;@;:eq;o;	;@;
+"
+until;iŒ;"
+until;@;o;	;o;;iŒ;iO;o;;iŒ;iI;@;@;o;	;o;;iŒ;iX;@);@;@;o;	;o;;iŒ;iz;@);@;@;@;:and;o; ;@;iŒ;o; ;@;iŒ;o;	;@;
+"target-width;iŒ;"target_width;@;o;	;o;;iŒ;iA;o;;iŒ;i4;@;@;@;:lte;o;	;@;
+"min-width;iŒ;"min_width;@;o;	;o;;iŒ;i0;o;;iŒ;i&;@;@;o;	;o;;iŒ;iA;@;;@;@;@;;#;o; ;@;iŒ;o;	;@;iŒ; @ ;o;	;o;;iŒ;i ;o;;iŒ;i;@;@;@;;";o;	;@;
+"and;iŒ;"and;@;o;	;o;;iŒ;i;o;;iŒ;i;@;@;o;	;o;;iŒ;i!;@H;@;@;o;	;o;;iŒ;iC;@H;@;@;o;	;o;;iŒ;i{;@H;@;@0[o:Sass::Tree::ContentNode	;iœ:@children[ ;@;o;	;o;;iœ;i;o;;iœ;i;@;@;@;=[[o;:;"@;"	from;i™;;"	from;@;o;	;o;;i™;i;o;;i™;i
+;@;@o;!	;"@;i™;o;);@;F;o;	;o;;i™;i;o;;i™;i;@;@[o;:;"@;"
+until;i´;;"
+until;@;o;	;o;;i´;i;o;;i´;i
+;@;@o;!	;"@;i´;@ë;o;	;o;;i´;i;o;;i´;i;@;@[o;:;"@;"and;i¨;;"and;@;o;	;o;;i¨;i;o;;i¨;i
+;@;@o;!	;"@;i¨;@ë;o;	;o;;i¨;i;o;;i¨;i;@;@[o;:;"@;"media-type;i≠;;"media_type;@;o;	;o;;i≠;i;o;;i≠;i
+;@;@o;:;"@;"mq-media-type;i≠;;"mq_media_type;@;o;	;o;;i≠;i%;o;;i≠;i;@;@[o;:;"@;"breakpoints;iÆ;;"breakpoints;@;o;	;o;;iÆ;i;o;;iÆ;i
+;@;@o;:;"@;"mq-breakpoints;iÆ;;"mq_breakpoints;@;o;	;o;;iÆ;i';o;;iÆ;i;@;@[o;:;"@;"responsive;iØ;;"responsive;@;o;	;o;;iØ;i;o;;iØ;i
+;@;@o;:;"@;"mq-responsive;iØ;;"mq_responsive;@;o;	;o;;iØ;i%;o;;iØ;i;@;@[o;:;"@;"static-breakpoint;i∞;;"static_breakpoint;@;o;	;o;;i∞;i;o;;i∞;i
+;@;@o;:;"@;"mq-static-breakpoint;i∞;;"mq_static_breakpoint;@;o;	;o;;i∞;i3;o;;i∞;i;@;@;o;	;o;;i±;i;o;;i©;i;@;@o;
+;;;iÂ;	[ ;@;["/*/ Add a breakpoint
+ */
+ */ @param {String} $name - Name of the breakpoint
+ */ @param {Number} $width - Width of the breakpoint
+ */
+ */ @requires {Variable} $mq-breakpoints
+ */
+ */ @example scss
+ */  @include mq-add-breakpoint(tvscreen, 1920px);
+ */  @include mq(tvscreen) {} */o;>;T;20;"mq-add-breakpoint;iÔ;	[o;; o;*
+;"@;+[[o;:;"@;"	name;i;;"	name;@;o;	;o;;i;i!;o;;i;i;@;@o;:;"@;"
+width;i;;"
+width;@;o;	;o;;i;i);o;;i;i#;@;@;i;@;o;	;o;;i;i);o;;i;i;@;@;"new-breakpoint;i;	[ ;'0;@;(0;o;	;o;;i;i*;o;;i;i;@;@o;; o: Sass::Script::Tree::Funcall;20;"@:@kwarg_splat0;"map-merge;iÒ:@keywordso:Sass::Util::NormalizedMap:	@mapIC:OrderedHash{ :
+@keys[ :@key_strings{ ;@;=[o;:;"@;"mq-breakpoints;iÒ;;"mq_breakpoints;@;o;	;o;;iÒ;i4;o;;iÒ;i%;@;@o;:;"@;"new-breakpoint;iÒ;;"new_breakpoint;@;o;	;o;;iÒ;iE;o;;iÒ;i6;@;@;o;	;o;;iÒ;iF;o;;iÒ;i;@;@;"mq-breakpoints;iÒ;	[ ;'T;@;(0;o;	;o;;iÒ;iN;o;;iÒ;i;@;@;@;=[[o;:;"@;"	name;iÔ;;"	name;@;o;	;o;;iÔ;i$;o;;iÔ;i;@;@0[o;:;"@;"
+width;iÔ;;"
+width;@;o;	;o;;iÔ;i,;o;;iÔ;i&;@;@0;o;	;o;;iÔ;i.;o;;iÔ;i;@;@o;
+;;;iÙ;	[ ;@;["£/*/ Show the active breakpoint in the top right corner of the viewport
+ */ @link https://github.com/sass-mq/sass-mq#seeing-the-currently-active-breakpoint
+ */
+ */ @param {List} $show-breakpoints ($mq-show-breakpoints) - List of breakpoints to show in the top right corner
+ */ @param {Map} $breakpoints ($mq-breakpoints) - Breakpoint names and sizes
+ */
+ */ @requires {Variable} $mq-breakpoints
+ */ @requires {Variable} $mq-show-breakpoints
+ */
+ */ @example scss
+ */  // Show breakpoints using global settings
+ */  @include mq-show-breakpoints;
+ */
+ */  // Show breakpoints using custom settings
+ */  @include mq-show-breakpoints((L, XL), (S: 300px, L: 800px, XL: 1200px)); */o;>;T;20;"mq-show-breakpoints;i;	[o:Sass::Tree::RuleNode:@selector_source_rangeo;	;o;;i;i;o;;i;i
+;@;@;T:
+@rule["body:before;i;	[o:Sass::Tree::PropNode:@value_source_rangeo;	;o;;i;i';o;;i;i ;@;@:@prop_syntax:new;["background-color:@name_source_rangeo;	;o;;i;i;o;;i;i;@;@;i;	[ ;@:
+@tabsi ;o;!;i;o;,;;-;@;"#FCF8E3;o;	;o;;i;i';o;;i;i ;@;@;o;	;@?;@E;@;@o;K;Lo;	;o;;i;i.;o;;i;i;@;@;M;N;["border-bottom;Oo;	;o;;i;i;o;;i;i;@;@;i;	[ ;@;Pi ;o;!;i;o;,;;-;@;"1px solid #FBEED5;o;	;o;;i;i.;o;;i;i;@;@;o;	;@P;@V;@;@o;K;Lo;	;o;;i;i,;o;;i;i;@;@;M;N;["border-left;Oo;	;o;;i;i;o;;i;i;@;@;i;	[ ;@;Pi ;o;!;i;o;,;;-;@;"1px solid #FBEED5;o;	;o;;i;i,;o;;i;i;@;@;o;	;@a;@g;@;@o;K;Lo;	;o;;i;i;o;;i;i;@;@;M;N;["
+color;Oo;	;o;;i;i;o;;i;i;@;@;i;	[ ;@;Pi ;o;!;i;o;,;;-;@;"#C09853;o;	;o;;i;i;o;;i;i;@;@;o;	;@r;@x;@;@o;K;Lo;	;o;;i	;i!;o;;i	;i;@;@;M;N;["	font;Oo;	;o;;i	;i;o;;i	;i;@;@;i	;	[ ;@;Pi ;o;!;i	;o;,;;-;@;"small-caption;o;	;o;;i	;i!;o;;i	;i;@;@;o;	;@É;@â;@;@o;K;Lo;	;o;;i
+;i;o;;i
+;i;@;@;M;N;["padding;Oo;	;o;;i
+;i;o;;i
+;i;@;@;i
+;	[ ;@;Pi ;o;!;i
+;o;,;;-;@;"3px 6px;o;	;o;;i
+;i;o;;i
+;i;@;@;o;	;@î;@ö;@;@o;K;Lo;	;o;;i;i";o;;i;i;@;@;M;N;["pointer-events;Oo;	;o;;i;i;o;;i;i;@;@;i;	[ ;@;Pi ;o;!;i;o;,;;-;@;"	none;o;	;o;;i;i";o;;i;i;@;@;o;	;@•;@´;@;@o;K;Lo;	;o;;i;i;o;;i;i;@;@;M;N;["position;Oo;	;o;;i;i;o;;i;i;@;@;i;	[ ;@;Pi ;o;!;i;o;,;;-;@;"
+fixed;o;	;o;;i;i;o;;i;i;@;@;o;	;@∂;@º;@;@o;K;Lo;	;o;;i;i;o;;i;i;@;@;M;N;["
+right;Oo;	;o;;i;i;o;;i;i;@;@;i;	[ ;@;Pi ;o;!;i;o;,;;-;@;"0;o;	;o;;i;i;o;;i;i;@;@;o;	;@«;@Õ;@;@o;K;Lo;	;o;;i;i;o;;i;i;@;@;M;N;["top;Oo;	;o;;i;i;o;;i;i;@;@;i;	[ ;@;Pi ;o;!;i;o;,;;-;@;"0;o;	;o;;i;i;o;;i;i;@;@;o;	;@ÿ;@ﬁ;@;@o;K;Lo;	;o;;i;i;o;;i;i;@;@;M;N;["z-index;Oo;	;o;;i;i;o;;i;i;@;@;i;	[ ;@;Pi ;o;!;i;o;,;;-;@;"100;o;	;o;;i;i;o;;i;i;@;@;o;	;@È;@Ô;@;@o;
+;;;i;	[ ;@;["</* Loop through the breakpoints that should be shown */o:Sass::Tree::EachNode;T;i;	[o;; o;@;20;"@;A0;"mq-get-breakpoint-width;i;Bo;C;DIC;E{ ;F[ ;G{ ;@;=[o;:;"@;"show-breakpoint;i;;"show_breakpoint;@;o;	;o;;i;iB;o;;i;i2;@;@o;:;"@;"breakpoints;i;;"breakpoints;@;o;	;o;;i;iP;o;;i;iD;@;@;o;	;o;;i;iQ;o;;i;i;@;@;"
+width;i;	[ ;'0;@;(0;o;	;o;;i;iQ;o;;i;i;@;@o:Sass::Tree::MixinNode;T;20;A0;"mq;i;	[o;K;Lo;	;o;;i;iX;o;;i;i;@;@;M;N;["content;Oo;	;o;;i;i;o;;i;i;@;@;i;	[ ;@;Pi ;o:,Sass::Script::Tree::StringInterpolation;"@:@aftero;S;"@;To;S;"@;To;!	;"@;i;o;,;;?;@;");o;	;o;;i;iX;o;;i;iV;@;@;i:	@mido;@;20;"@;A0;"mq-px2em;i;Bo;C;DIC;E{ ;F[ ;G{ ;@;=[o;:;"@;"
+width;i;;"
+width;@;o;	;o;;i;iT;o;;i;iN;@;@;o;	;o;;i;iU;o;;i;iE;@;@;@:@beforeo;!	;"@;i;o;,;;?;@;" (;o;	;o;;i;iE;o;;i;iA;@;@;o;	;o;;i;iX;@E;@;@;i;Uo;:;"@;"
+width;i;;"
+width;@;o;	;o;;i;i@;o;;i;i:;@;@;@;Vo;!	;"@;i;o;,;;?;@;"
+ ‚â• ;o;	;o;;i;i:;o;;i;i3;@;@;o;	;o;;i;iX;@S;@;@;i;Uo;:;"@;"show-breakpoint;i;;"show_breakpoint;@;o;	;o;;i;i2;o;;i;i";@;@;@;Vo;!	;"@;i;o;,;;?;@;" ;o;	;o;;i;i";o;;i;i;@;@;o;	;o;;i;iX;@a;@;@;o;	;@;@%;@;@;Bo;C;DIC;E{"breakpointso;:;"@;"breakpoints;i;;"breakpoints;@;o;	;o;;i;iJ;o;;i;i>;@;@;F["breakpoints;G{@g"breakpoints;@;=[o;:;"@;"show-breakpoint;i;;"show_breakpoint;@;o;	;o;;i;i.;o;;i;i;@;@;o;	;o;;i;iL;o;;i;i;@;@:
+@listo;:;"@;"show-breakpoints;i;;"show_breakpoints;@;o;	;o;;i;i9;o;;i;i(;@;@;@:
+@vars["show-breakpoint;o;	;o;;i;i:;o;;i;i;@;@;@;Pi ;o;	;o;;i;i;@9;@;@:@parsed_ruleso:"Sass::Selector::CommaSequence;"0:@members[o:Sass::Selector::Sequence;[[o:#Sass::Selector::SimpleSequence:@sourceso;;{ ;"0:@subject0;[[o:Sass::Selector::Element	:@namespace0;"0;"	body;io:Sass::Selector::Pseudo;"0:@selector0:@syntactic_type:
+class;"before;i:	@arg0;i;o;	;o;;i;i;o;;i;i;0;0;i;i;@;=[[o;:;"@;"show-breakpoints;i;;"show_breakpoints;@;o;	;o;;i;i2;o;;i;i!;@;@o;:;"@;"mq-show-breakpoints;i;;"mq_show_breakpoints;@;o;	;o;;i;iH;o;;i;i4;@;@[o;:;"@;"breakpoints;i;;"breakpoints;@;o;	;o;;i;iV;o;;i;iJ;@;@o;:;"@;"mq-breakpoints;i;;"mq_breakpoints;@;o;	;o;;i;ig;o;;i;iX;@;@;o;	;o;;i;ii;o;;i;i;@;@u;3Œ[o:"Sass::Script::Tree::Operation:@filename"L/var/www/vhosts/apacheloggenerator.com/Apache-Log-Generator/css/mq.scss:
+@linei:@operand2o: Sass::Script::Tree::Literal	;@;i:@valueo: Sass::Script::Value::Number
+:@original"0:@numerator_units[ :@options{ ;
+i :@denominator_units[ :@source_rangeo:Sass::Source::Range	:@end_poso:Sass::Source::Position;i:@offseti*:@start_poso;;i;i):@importero: Sass::Importers::Filesystem:@same_name_warningso:Set:
+@hash{ :@real_root"D/var/www/vhosts/apacheloggenerator.com/Apache-Log-Generator/css:
+@root"D/var/www/vhosts/apacheloggenerator.com/Apache-Log-Generator/css:
+@file@;@:@operator:gt:@operand1o: Sass::Script::Tree::Funcall:@splat0;@:@kwarg_splat0:
+@name"length;i:@keywordso:Sass::Util::NormalizedMap:	@mapIC:OrderedHash{ :
+@keys[ :@key_strings{ ;@:
+@args[o:!Sass::Script::Tree::Variable;@;$"mq-show-breakpoints;i:@underscored_name"mq_show_breakpoints;@;o;	;o;;i;i%;o;;i;i;@;@;o;	;o;;i;i&;o;;i;i
+;@;@;o;	;o;;i;i+;@%;@;@0[o:Sass::Tree::MixinNode;"0;#0;$"mq-show-breakpoints;i:@children[ ;%{ ;@;+[ ;o;	;o;;i;i&;o;;i;i
+;@;@o;R;T;20;A0;"mq;i!;	[o;
+;;;i!;	[ ;@;["/*mobile */o:Sass::Tree::MediaNode;T:@query["(o;!	;"@;i";o;,;;-;@;"#-webkit-min-device-pixel-ratio;o;	;o;;i";i0;o;;i";i;@;@": o;!	;"@;i";o;#
+;$"2;%[ ;@;i;&@W;o;	;o;;i";i3;o;;i";i2;@;@")", "(o;!	;"@;i";o;,;;-;@;"min-resolution;o;	;o;;i";iE;o;;i";i7;@;@": o;!	;"@;i";o;#
+;$"192dpi;%["dpi;@;i¿;&[ ;o;	;o;;i";iM;o;;i";iG;@;@");i";	[ ;@;Pi ;" ;o;	;o;;i";iO;o;;i";i
+;@;@;Bo;C;DIC;E{"
+untilo;!	;"@;i!;o;,;;-;@;"mobile;o;	;o;;i!;i ;o;;i!;i;@;@;F["
+until;G{@Í"
+until;@;=[ ;o;	;o;;i!;i";o;;i!;i;@;@o;R;T;20;A0;"mq;i$;	[o;g;T;h["(o;!	;"@;i%;o;,;;-;@;"#-webkit-min-device-pixel-ratio;o;	;o;;i%;i0;o;;i%;i;@;@": o;!	;"@;i%;o;#
+;$"2;%[ ;@;i;&@W;o;	;o;;i%;i3;o;;i%;i2;@;@")", "(o;!	;"@;i%;o;,;;-;@;"min-resolution;o;	;o;;i%;iE;o;;i%;i7;@;@": o;!	;"@;i%;o;#
+;$"192dpi;%["dpi;@;i¿;&[ ;o;	;o;;i%;iM;o;;i%;iG;@;@");i%;	[ ;@;Pi ;" ;o;	;o;;i%;iO;o;;i%;i
+;@;@;Bo;C;DIC;E{"ando;!	;"@;i$;o;,;;?;@;"(orientation: landscape);o;	;o;;i$;iB;o;;i$;i(;@;@"
+untilo;!	;"@;i$;o;,;;-;@;"mobile;o;	;o;;i$;i ;o;;i$;i;@;@;F["
+until"and;G{@("and@/"
+until;@;=[ ;o;	;o;;i$;iD;o;;i$;i;@;@o;R;T;20;A0;"mq;i';	[o;
+;;;i';	[ ;@;["/*tablet, landscape */o;g;T;h["(o;!	;"@;i(;o;,;;-;@;"#-webkit-min-device-pixel-ratio;o;	;o;;i(;i0;o;;i(;i;@;@": o;!	;"@;i(;o;#
+;$"2;%[ ;@;i;&@W;o;	;o;;i(;i3;o;;i(;i2;@;@")", "(o;!	;"@;i(;o;,;;-;@;"min-resolution;o;	;o;;i(;iE;o;;i(;i7;@;@": o;!	;"@;i(;o;#
+;$"192dpi;%["dpi;@;i¿;&[ ;o;	;o;;i(;iM;o;;i(;iG;@;@");i(;	[ ;@;Pi ;" ;o;	;o;;i(;iO;o;;i(;i
+;@;@;Bo;C;DIC;E{"	fromo;!	;"@;i';o;,;;-;@;"mobile;o;	;o;;i';i;o;;i';i;@;@"ando;!	;"@;i';o;,;;?;@;"(orientation: landscape);o;	;o;;i';iQ;o;;i';i7;@;@"
+untilo;!	;"@;i';o;,;;-;@;"tablet;o;	;o;;i';i/;o;;i';i);@;@;F["	from"
+until"and;G{@s"	from@z"and@Å"
+until;@;=[ ;o;	;o;;i';iS;o;;i';i;@;@o;R;T;20;A0;"mq;i*;	[o;
+;;;i*;	[ ;@;["/*tablet, portrait */o;g;T;h["(o;!	;"@;i+;o;,;;-;@;"#-webkit-min-device-pixel-ratio;o;	;o;;i+;i0;o;;i+;i;@;@": o;!	;"@;i+;o;#
+;$"2;%[ ;@;i;&@W;o;	;o;;i+;i3;o;;i+;i2;@;@")", "(o;!	;"@;i+;o;,;;-;@;"min-resolution;o;	;o;;i+;iE;o;;i+;i7;@;@": o;!	;"@;i+;o;#
+;$"192dpi;%["dpi;@;i¿;&[ ;o;	;o;;i+;iM;o;;i+;iG;@;@");i+;	[ ;@;Pi ;" ;o;	;o;;i+;iO;o;;i+;i
+;@;@;Bo;C;DIC;E{"	fromo;!	;"@;i*;o;,;;-;@;"mobile;o;	;o;;i*;i;o;;i*;i;@;@"ando;!	;"@;i*;o;,;;?;@;"(orientation: portrait);o;	;o;;i*;iP;o;;i*;i7;@;@"
+untilo;!	;"@;i*;o;,;;-;@;"tablet;o;	;o;;i*;i/;o;;i*;i);@;@;F["	from"
+until"and;G{@«"	from@Œ"and@’"
+until;@;=[ ;o;	;o;;i*;iR;o;;i*;i;@;@o;R;T;20;A0;"mq;i-;	[o;
+;;;i-;	[ ;@;["/*laptop */o:Sass::Tree::DirectiveNode;T;i.;	[ ;@;Pi ;["@-moz-document " "url-prefix();o;	;o;;i.;i(;o;;i.;i
+;@;@o;g;T;h["(o;!	;"@;i/;o;,;;-;@;"#-webkit-min-device-pixel-ratio;o;	;o;;i/;i0;o;;i/;i;@;@": o;!	;"@;i/;o;#
+;$"2;%[ ;@;i;&@W;o;	;o;;i/;i3;o;;i/;i2;@;@")", "(o;!	;"@;i/;o;,;;-;@;"min-resolution;o;	;o;;i/;iE;o;;i/;i7;@;@": o;!	;"@;i/;o;#
+;$"192dpi;%["dpi;@;i¿;&[ ;o;	;o;;i/;iM;o;;i/;iG;@;@");i/;	[ ;@;Pi ;" ;o;	;o;;i/;iO;o;;i/;i
+;@;@;Bo;C;DIC;E{"	fromo;!	;"@;i-;o;,;;-;@;"tablet;o;	;o;;i-;i;o;;i-;i;@;@"
+untilo;!	;"@;i-;o;,;;-;@;"desktop;o;	;o;;i-;i0;o;;i-;i);@;@;F["	from"
+until;G{@$"	from@+"
+until;@;=[ ;o;	;o;;i-;i2;o;;i-;i;@;@o;R;T;20;A0;"mq;i1;	[o;
+;;;i1;	[ ;@;["/*desktop */o;i;T;i2;	[ ;@;Pi ;["@-moz-document " "url-prefix();o;	;o;;i2;i(;o;;i2;i
+;@;@o;g;T;h["(o;!	;"@;i3;o;,;;-;@;"#-webkit-min-device-pixel-ratio;o;	;o;;i3;i0;o;;i3;i;@;@": o;!	;"@;i3;o;#
+;$"2;%[ ;@;i;&@W;o;	;o;;i3;i3;o;;i3;i2;@;@")", "(o;!	;"@;i3;o;,;;-;@;"min-resolution;o;	;o;;i3;iE;o;;i3;i7;@;@": o;!	;"@;i3;o;#
+;$"192dpi;%["dpi;@;i¿;&[ ;o;	;o;;i3;iM;o;;i3;iG;@;@");i3;	[ ;@;Pi ;" ;o;	;o;;i3;iO;o;;i3;i
+;@;@;Bo;C;DIC;E{"	fromo;!	;"@;i1;o;,;;-;@;"desktop;o;	;o;;i1;i ;o;;i1;i;@;@"
+untilo;!	;"@;i1;o;,;;-;@;"	wide;o;	;o;;i1;i.;o;;i1;i*;@;@;F["	from"
+until;G{@x"	from@"
+until;@;=[ ;o;	;o;;i1;i0;o;;i1;i;@;@o;R;T;20;A0;"mq;i5;	[o;
+;;;i5;	[ ;@;["/*4k */o;i;T;i6;	[ ;@;Pi ;["@-moz-document " "url-prefix();o;	;o;;i6;i(;o;;i6;i
+;@;@o;g;T;h["(o;!	;"@;i7;o;,;;-;@;"#-webkit-min-device-pixel-ratio;o;	;o;;i7;i0;o;;i7;i;@;@": o;!	;"@;i7;o;#
+;$"2;%[ ;@;i;&@W;o;	;o;;i7;i3;o;;i7;i2;@;@")", "(o;!	;"@;i7;o;,;;-;@;"min-resolution;o;	;o;;i7;iE;o;;i7;i7;@;@": o;!	;"@;i7;o;#
+;$"192dpi;%["dpi;@;i¿;&[ ;o;	;o;;i7;iM;o;;i7;iG;@;@");i7;	[ ;@;Pi ;" ;o;	;o;;i7;iO;o;;i7;i
+;@;@;Bo;C;DIC;E{"	fromo;!	;"@;i5;o;,;;-;@;"	wide;o;	;o;;i5;i;o;;i5;i;@;@;F["	from;G{@Ã"	from;@;=[ ;o;	;o;;i5;i;o;;i5;i;@;@;@;o;	;o;;i;i;o;;i;i;@;@

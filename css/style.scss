@@ -1,3 +1,4 @@
+@import 'mq';
 //VAR
 	$white: #fafafa;
 	$graphite: #231F20;
@@ -7,7 +8,7 @@
 	$teal: #00A79D;
 
 	$width-side_bar: 300px;
-	$width-content: calc(100% - 300px);
+	$width-content: calc(100% - 602px);
 	$size-tile: 70px;
 	$size-tile_small: 50px;
 
@@ -22,83 +23,167 @@
 			 -o-transition: $transition; 
 				transition: $transition;
 	}
+
+	@mixin user-select($user-select){
+		-webkit-user-select: $user-select; 
+		   -moz-user-select: $user-select; 
+			 -o-user-select: $user-select; 
+				user-select: $user-select;
+	}	
+
 body {
 	background: $teal;
 	font-family: $roboto-con;
+	@include mq($until: tablet) {
+		min-width: 1024px;
+	}
 }
 
 section#side_bar {
 	background: $graphite;
 	width: $width-side_bar;
-	height: 100vh;
 	position: fixed;
-	padding: 40px;
 	left: 0px;
 	z-index: 10;
-	@include transition(all 0.5s ease);
-	.logo {
-		width: 100%;
-		overflow: hidden;
-		margin-bottom: 40px;
-		.icon, .text {
-			display: inline-block;
-			height: 60px; 
-			float: right;
-		}
-		.icon {margin-left: 20px;}
-		.text {
-			opacity: 1;
-			@include transition(all 0.5s ease);
-		}
+	@include mq($until: mobile) {
+		min-height: 100vh;
+		height: 100%;
+		padding: 20px 40px 20px 20px;
+		p {line-height: 1.3;}
+		footer {}
 	}
-	.app_info {opacity: 1; @include transition(all 0.5s ease);}
+	@include mq($from: mobile) {
+		height: 100vh;
+		padding: 40px;
+		footer {
+			position: absolute;
+			bottom: 0;
+			width: calc(100% - 80px);
+			left: 40px;
+			p {line-height: 1.3;}
+		}		
+	}	
+	h4 {
+		color: $teal;
+		font-size: 85%;
+		text-align: right;
+		text-transform: uppercase;
+		margin: 0;
+	}
 	p {
 		color: $mediumgrey;
 		font-weight: 300;
 		text-align: right;
 		font-size: 85%;
+		margin-bottom: 0.5em;
 	}
-	.button {
-		display: block;
-		width: auto;
-		min-width: 50px;
-		background: $teal;
-		color: $white;
-		text-transform: uppercase;
-		float: right;
-		box-shadow: inset 0 60px 0 darken($teal,0%);
-		font-size: 14px;
-		padding: 16px 16px; 
-		outline: none;
-		@include transition(all 0.3s ease);
-		&:hover {
-			box-shadow: inset 0 60px 0 darken($teal,10%);
+	@include transition(all 0.5s ease);
+	.content {	
+		display: inline-block;
+		width: 100%;
+		.logo {
+			width: 100%;
+			overflow: hidden;
+			@include mq($until: mobile) {
+				margin-top: 20px;
+				margin-bottom: 20px;
+			}
+			@include mq($from: mobile) {
+				margin-bottom: 40px;
+			}
+			.icon, .text {
+				display: inline-block;
+				height: 60px; 
+				float: right;
+			}
+			.icon {margin-left: 20px;}
+			.text {
+				opacity: 1;
+				@include transition(all 0.5s ease);
+			}
+		}
+		.app_info {
+			opacity: 1;
+			@include transition(all 0.5s ease);
+			overflow: hidden;
+			margin-bottom: 12px;
+			.version {color: $mediumgrey; margin-bottom: 12px;}
+			p {margin-bottom: 0;}
+		}
+		.buttons {
+			display: inline-block;
+			width: 100%;
+			text-align: right;
+			
+		}
+		.button {
+			color: $white;
+			text-transform: uppercase;
+			font-size: 14px;
+			margin-bottom: 6px;
+			outline: none;
+			background: $teal;
+			min-width: 50px;
+			height: 48px;
+			line-height: 48px;
+			padding: 0 16px;
+			display: inline-block;
+			@include transition(all 0.3s ease);
+			&:hover {
+				box-shadow: inset 0 -60px 0 rgba(darken($teal,30%),0.5);
+			}
+		}
+		.paypal {
+			background: $teal url('../img/paypal_button.jpg');
+			background-position: right;
+			padding: 0;
+			width: 127px;
+		}
+		.show_more {
+			position: relative;
+			margin-bottom: 12px;
+			.less_text {width: 0;}
+			.width0 {width: 0;}
+			.widthauto {width: auto;}
 		}
 	}
-	.github {
-		float: right;
+	ul.social {
+		text-align: right;
+		li {
+			margin: 0 4px;
+			display: inline;
+		}
+	}
+	.social_icons {
 		display: inline-block;
-		width: 100%; 
+		margin-bottom: 10px;
 		a {
 			display: block;
-			color: $teal;
 			font-size: 50px;
+			line-height: 50px;
 			width: 50px;
 			height: 50px;
 			float: right;
 			text-align: center;
 			@include transition(all 0.3s ease);
-			&:hover {
-				color: lighten($teal,20%);
-			}
+		}
+	}
+	.github {
+		a {
+			color: $teal;
+			&:hover {color: lighten($teal,20%);}
+		}
+	}
+	.facebook {
+		a {
+			background: $teal;
+			color: $graphite;
+			&:hover {background-color: lighten($teal,20%);}
+			i {position: relative; top: 7px;}
 		}
 	}
 	footer {
-		position: absolute;
-		bottom: 0;
-		width: calc(100% - 80px);
-		left: 40px;
-		padding-top: 30px;
+		padding-top: 10px;
 		border-top: 8px dotted lighten($graphite,5%);
 		@include transition(all 0.5s ease);
 		span {font-weight: 600;}
@@ -107,22 +192,37 @@ section#side_bar {
 		}
 	}
 }
+.to_fade {@include transition(all 0.3s ease);}
 .full_side_bar {
 	left: -180px !important;
-	.logo .text, .app_info, footer {opacity: 0 !important;}
+	.to_fade {opacity: 0 !important;}
+	.paypal {
+		width: 50px !important;
+		background-position: left !important;
+	}
+	.to_disapear {opacity: 0 !important; height: 0 !important;}
 }
-.section {
-	width: 100%;
-	min-height: 33.33vh;
-	overflow: hidden;
+div.right_bar {
+	background: $graphite;
+	padding: 1px;
+	@include mq($until: mobile) {
+		width: 100%;
+		height: auto;
+		position: relative;
+	}
+	@include mq($from: mobile) {
+		width: 302px;
+		height: 100vh;
+		z-index: 10;
+		position: fixed;
+		top: 0;
+		right: 0;
+	}	
 }
-section.section_from {
-	background: $lightgrey;
-}
-section.section_to {
-	background: $mediumgrey;
-	
-}
+
+////////////////////////////////////////////////////
+section.section_from {background: $lightgrey;}
+section.section_to {background: $mediumgrey;}
 section.section_syntax {
 	background: $teal;
 	color: $white;
@@ -135,47 +235,85 @@ section.section_syntax {
 		text-transform: uppercase;
 		
 	}
-	.example {
-		position: absolute;
-		bottom: 0;
-		width: calc(100vw - 300px - 80px);
-		margin-left: $padding_ul;
-		border-top: 6px dotted lighten($teal,5%);
-		padding: 10px;
-		h3 {
-			color: lighten($teal,5%);
-		}
-		p {color: lighten($teal,35%);}
+	.example, .syntax {
+		min-height: 80px;
+		min-height: 8vh;
+		h3 {@include user-select(none);}
 	}
 	.syntax {
-		h3 {color: lighten($teal,15%);}
+		background: darken($teal,5%);
+		width: calc(100% - 60px);
+		margin: 30px 30px 10px;
+		padding: 10px;
+		overflow: hidden;
+		h3 {
+			color: lighten($teal,15%);
+			margin-top: 0;
+			line-height: 1;
+			display: inline;
+		}
 		p {margin-bottom: 0;}
 	}
-}
-.info, .content {
-	float: left;
-	height: inherit;	
-	min-height: inherit;
-	//padding: 40px;
-}
-.info {
-	width: $width-side_bar - 120px;
-	min-height: 100px;
-	margin-left: 120px;
-	padding: $padding_ul 0 $padding_ul $padding_ul;
-	h4 {
-		font-size: 15px;
-		line-height: 1.1;
-		text-transform: uppercase;
-		margin-top: 10px;
-		font-weight: 600;
-	}
-	p {
-		font-size: 13px;
-		text-align: justify;
-		line-height: 1.2;
+	.example {
+		width: calc(100vw - 602px - 80px);
+		margin-left: $padding_ul;
+		padding: 10px;
+		margin-bottom: 30px;
+		h3 {
+			color: lighten($teal,5%);
+			margin-top: 0;
+			line-height: 1;
+		}
+		p {color: lighten($teal,35%); margin-bottom: 0;}
 	}
 }
+.section {
+	width: 100%;
+	min-height: 33.33vh;
+	overflow: hidden;
+	.info, .content {
+		float: left;
+		height: inherit;	
+		min-height: inherit;
+		//padding: 40px;
+	}
+	.info {
+		width: $width-side_bar - 120px;
+		min-height: 100px;
+		margin-left: 120px;
+		padding: $padding_ul 0 $padding_ul $padding_ul;
+		h4 {
+			font-size: 15px;
+			line-height: 1.1;
+			text-transform: uppercase;
+			margin-top: 10px;
+			font-weight: 600;
+		}
+		p {
+			font-size: 13px;
+			text-align: justify;
+			line-height: 1.2;
+		}
+	}
+	.info-right {
+		@extend .info;
+		margin-left: 0;
+	}
+	.content {
+		width: $width-content;
+		overflow: hidden;
+		.from-signs, .from-mainblocks {float: left;}
+		.from-signs {
+			width: 270px;
+			height: inherit;
+			min-height: 33.33vh;
+		}
+		.from-mainblocks {
+			width: calc(100% - 270px);
+		}
+	}
+}
+
 .section_from .info {
 	h4 {color: $teal;}
 	p {color: $grey;}
@@ -188,19 +326,6 @@ section.section_syntax {
 	h4 {color: lighten($teal,40%);}
 	p {color: $white; opacity: 0.8;}
 }
-.content {
-	width: $width-content;
-	overflow: hidden;
-	.from-signs, .from-mainblocks {float: left;}
-	.from-signs {
-		width: 25%;
-		height: inherit;
-		min-height: 33.33vh;
-	}
-	.from-mainblocks {
-		width: 75%;
-	}
-}
 .dt {display: table; width: 100%;}
 .dtc {display: table-cell;}
 .element {
@@ -211,8 +336,6 @@ section.section_syntax {
 	.dt {height: 30px;}
 	.dtc {vertical-align: middle;}
 }
-
-
 .part-basic {
 	display: inline-block;
 	background-color: $white;
@@ -252,12 +375,12 @@ section.section_syntax {
 	margin: 0 !important;
 }
 
-.chooseFrom, .chooseFromSigns, .chooseTo, .syntax {
+.chooseFrom, .chooseFromSigns, .chooseTo {
 	width: 100%;
 	min-height: 100px;
 	overflow: hidden;
 }
+.chooseFromSigns {width: 255px;}
 .chooseTo {padding: $padding_ul;}
-.syntax {padding: $padding_ul 40px;}
 .chooseFrom {padding: $padding_ul $padding_ul*0.5 $padding_ul $padding_ul;}
 .chooseFromSigns {padding: $padding_ul $padding_ul $padding_ul $padding_ul*0.5;}
